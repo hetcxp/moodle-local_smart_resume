@@ -2,13 +2,13 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $settings = new admin_settingpage('local_smartresume', get_string('pluginname', 'local_smartresume'));
+    $settings = new admin_settingpage('local_smart_resume', get_string('pluginname', 'local_smart_resume'));
     $ADMIN->add('localplugins', $settings);
 
     $settings->add(new admin_setting_configcheckbox(
-        'local_smartresume/enable',
-        'Enable Smart Resume', // Temporary hardcoded string to bypass cache error
-        'If enabled, the plugin will automatically highlight and scroll to the first incomplete activity in courses.', // Temporary hardcoded string
+        'local_smart_resume/enable',
+        get_string('enable', 'local_smart_resume'),
+        get_string('enable_desc', 'local_smart_resume'),
         1 // Default to enabled
     ));
 }

@@ -1,36 +1,24 @@
-# Smart Resume (local_smartresume)
+# Smart Resume (Reanudar Inteligente)
 
-A Moodle local plugin that enhances the user experience by automatically identifying and guiding students to their next incomplete activity within a course.
+**Smart Resume** es un plugin local para Moodle diseñado para mejorar la experiencia del estudiante (UX) al redirigirlo automáticamente a la primera actividad incompleta dentro de un curso.
 
-## Features
+## Características principales
+* **Scroll Automático**: Desplaza la pantalla suavemente hasta la actividad que el estudiante debe realizar a continuación.
+* **Resaltado Visual**: Aplica un borde y una etiqueta personalizada a la actividad pendiente.
+* **Optimizado para el Core**: Utiliza el sistema de Hooks de Moodle y la API de Finalización (Completion API).
+* **Ligero**: No añade tablas a la base de datos ni afecta el rendimiento del servidor.
 
-- **Automatic Detection:** Scans the current course for activities with completion tracking enabled.
-- **Smart Navigation:** Identifies the *first* visible activity that the current user has not yet completed.
-- **Visual Focus:** (Via included JavaScript) Highlights or scrolls to the next activity, helping students quickly resume their learning path.
-- **Configurable:** Can be enabled or disabled globally via Site Administration.
+## Requisitos
+* **Moodle**: 4.5 LTS (compatible con 4.0+)
+* **Finalización de actividades**: Debe estar habilitada en el sitio y en el curso.
 
-## Installation
+## Instalación
+1. Copia la carpeta `smart_resume` en el directorio `/local/` de tu instalación de Moodle.
+2. Ve a 'Administración del sitio' > 'Notificaciones' para completar la instalación.
+3. Activa el plugin en los ajustes de 'Plugins locales'.
 
-1.  Clone this repository into your Moodle's `local/` directory:
-    ```bash
-    git clone https://github.com/hetcxp/moodle_smartresume.git local/smartresume
-    ```
-2.  Run the Moodle upgrade script (via command line or web interface):
-    ```bash
-    php admin/cli/upgrade.php
-    ```
+## Privacidad (GDPR)
+Este plugin cumple con la **Privacy API** de Moodle. No almacena, procesa ni transmite datos personales de los usuarios. Solo lee el estado de finalización de actividades para mejorar la navegación en el frontend.
 
-## Configuration
-
-Go to **Site administration > Plugins > Local plugins > Smart Resume**.
-
--   **Enable Smart Resume:** Toggle the functionality on or off globally.
-
-## Requirements
-
--   Moodle 4.0 or higher (uses the new Hook API).
--   Completion tracking must be enabled at the site and course level.
-
-## License
-
-This plugin is licensed under the [GPLv3](http://www.gnu.org/copyleft/gpl.html).
+---
+Desarrollado por **Héctor Eduardo Terán Canelones**.

@@ -1,0 +1,200 @@
+> MAPA:
+./amd/src/main.js
+./classes/hook/before_footer.php
+./classes/privacy/provider.php
+./db/hooks.php
+./lang/en/local_smart_resume.php
+./lang/es/local_smart_resume.php
+./lib.php
+./settings.php
+./version.php
+
+> CÓDIGO:
+
+--- ./settings.php: ---
+<?php
+defined('MOODLE_INTERNAL') || die();
+if ($hassiteconfig) {
+$settings = new admin_settingpage('local_smart_resume', get_string('pluginname', 'local_smart_resume'));
+$ADMIN->add('localplugins', $settings);
+$settings->add(new admin_setting_configcheckbox(
+'local_smart_resume/enable',
+get_string('enable', 'local_smart_resume'),
+get_string('enable_desc', 'local_smart_resume'),
+1 // Default to enabled
+));
+}
+
+--- ./classes/privacy/provider.php: ---
+<?php
+namespace local_smart_resume\privacy;
+defined('MOODLE_INTERNAL') || die();
+use core_privacy\local\metadata\null_provider;
+use core_privacy\local\metadata\provider as metadata_provider;
+/**
+* Privacy provider for the local_smart_resume plugin.
+*
+* This plugin does not store any personal data. It only reads existing completion data
+* to enhance the UI.
+*/
+class provider implements metadata_provider, null_provider {
+/**
+* Get the language string identifier with the component's language
+* file to explain why this plugin stores no data.
+*
+* @return  string
+*/
+public static function get_reason() : string {
+return 'privacy:metadata';
+}
+}
+
+--- ./classes/hook/before_footer.php: ---
+<?php
+namespace local_smart_resume\hook;
+use core\hook\output\before_footer_html_generation;
+defined('MOODLE_INTERNAL') || die();
+/**
+* Hook to inject Smart Resume AMD module on course view pages.
+*/
+class before_footer {
+/**
+* Callback for the before_footer_html_generation hook.
+*
+* @param before_footer_html_generation $hook
+*/
+public static function execute(before_footer_html_generation $hook): void {
+global $PAGE, $USER, $CFG;
+// Check if plugin is enabled globally
+if (!get_config('local_smart_resume', 'enable')) {
+return;
+}
+// Check if we are on the main course page
+if ($PAGE->pagelayout === 'course' && strpos($PAGE->url->get_path(), '/course/view.php') !== false) {
+// Prepare strings for JS
+$strings = [
+'nextactivity' => get_string('nextactivity', 'local_smart_resume')
+];
+// Determine the first incomplete activity
+$first_incomplete_cmid = null;
+$course = $PAGE->course;
+// Ensure completion lib is loaded
+require_once($CFG->libdir.'/completionlib.php');
+$completion = new \completion_info($course);
+if ($completion->is_enabled()) {
+$modinfo = get_fast_modinfo($course);
+$cms = $modinfo->get_cms();
+foreach ($cms as $cm) {
+// Skip if not visible
+if (!$cm->uservisible) {
+continue;
+}
+// Skip if completion is not tracked for this activity
+if ($cm->completion == COMPLETION_TRACKING_NONE) {
+continue;
+}
+// Get completion data for current user
+$completiondata = $completion->get_data($cm, true, $USER->id);
+// Check if incomplete (0)
+if ($completiondata->completionstate == COMPLETION_INCOMPLETE) {
+$first_incomplete_cmid = $cm->id;
+break;
+}
+}
+}
+// Initialize the AMD module with the calculated ID
+$PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$strings, $first_incomplete_cmid]);
+}
+}
+}
+
+--- ./amd/src/main.js: ---
+define(['jquery'], function($) {
+return {
+init: function(strings, targetCmid) {
+if (!targetCmid) {
+// No incomplete activity identified by the server.
+return;
+}
+// Find the activity element using the standard Moodle module ID
+// Standard Moodle themes use id="module-<cmid>" on the list item or wrapper div.
+let firstIncomplete = $('#module-' + targetCmid);
+// Fallback for some custom themes that might use a different attribute
+if (firstIncomplete.length === 0) {
+// Try searching by data attribute if ID fails
+firstIncomplete = $('[data-cmid="' + targetCmid + '"]');
+}
+// If still not found, we can't do anything.
+if (firstIncomplete.length === 0) {
+return;
+}
+// Ensure we are targeting the main activity card for styling
+// Sometimes the ID is on a list item <li> which contains the card <div>.
+// We want to highlight the card if possible, or the list item if that's the container.
+// Adjust selection to ensure visibility.
+// If it's an LI, sometimes the visual "card" is inside.
+// But usually highlighting the LI is fine.
+// Let's check if there's a specific 'activity-card' inside to be more specific with the border.
+const activityCard = firstIncomplete.find('.activity-item, .activityinstance, .contentwithoutlink');
+const targetElement = activityCard.length > 0 ? activityCard.first() : firstIncomplete;
+// Scroll to the element
+$('html, body').animate({
+scrollTop: targetElement.offset().top - 150
+}, 800);
+// Add highlight class
+targetElement.addClass('local-smart-resume-highlight');
+// Add label
+// Remove any existing labels first (just in case)
+targetElement.find('.local-smart-resume-label').remove();
+const labelHtml = '<div class="local-smart-resume-label">' +
+(strings.nextactivity || 'Next Activity') +
+'</div>';
+// We append to the target element.
+// Position: relative is set in CSS for .local-smart-resume-highlight to handle absolute positioning of label.
+targetElement.append(labelHtml);
+}
+};
+});
+
+--- ./lang/es/local_smart_resume.php: ---
+<?php
+defined('MOODLE_INTERNAL') || die();
+$string['pluginname'] = 'Reanudar Inteligente';
+$string['nextactivity'] = 'Siguiente Actividad';
+$string['enable'] = 'Habilitar Reanudar Inteligente';
+$string['enable_desc'] = 'Si se habilita, el plugin resaltará y se desplazará automáticamente a la primera actividad incompleta en los cursos.';
+$string['privacy:metadata'] = 'El plugin Reanudar Inteligente no almacena ningún dato personal.';
+
+--- ./lang/en/local_smart_resume.php: ---
+<?php
+defined('MOODLE_INTERNAL') || die();
+$string['pluginname'] = 'Smart Resume';
+$string['nextactivity'] = 'Next Activity';
+$string['enable'] = 'Enable Smart Resume';
+$string['enable_desc'] = 'If enabled, the plugin will automatically highlight and scroll to the first incomplete activity in courses.';
+$string['privacy:metadata'] = 'The Smart Resume plugin does not store any personal data.';
+
+--- ./version.php: ---
+<?php
+defined('MOODLE_INTERNAL') || die();
+$plugin->component = 'local_smart_resume';
+$plugin->version   = 2026030403;
+$plugin->requires  = 2022041900; // Moodle 4.0+
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->release   = '1.1';
+
+--- ./lib.php: ---
+<?php
+defined('MOODLE_INTERNAL') || die();
+// This file is kept intentionally empty as functions have been migrated to classes/hooks.
+
+--- ./db/hooks.php: ---
+<?php
+defined('MOODLE_INTERNAL') || die();
+$callbacks = [
+[
+'hook' => \core\hook\output\before_footer_html_generation::class,
+'callback' => 'local_smart_resume\hook\before_footer::execute',
+'priority' => 100,
+],
+];
