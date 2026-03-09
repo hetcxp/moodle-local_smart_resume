@@ -1,3 +1,11 @@
+/**
+ * Smart Resume plugin styles.
+ *
+ * @package    local_smart_resume
+ * @copyright  2025 Héctor Eduardo Terán Canelones
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 /* Estilo para el contenedor de la actividad resaltada */
 .local-smart-resume-highlight {
     border: 2px solid #0f6cbf !important; /* Azul estándar de Moodle */

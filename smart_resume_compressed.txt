@@ -13,6 +13,13 @@
 
 --- ./settings.php: ---
 <?php
+/**
+* Smart Resume plugin settings.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 defined('MOODLE_INTERNAL') || die();
 if ($hassiteconfig) {
 $settings = new admin_settingpage('local_smart_resume', get_string('pluginname', 'local_smart_resume'));
@@ -27,17 +34,23 @@ get_string('enable_desc', 'local_smart_resume'),
 
 --- ./classes/privacy/provider.php: ---
 <?php
+/**
+* Smart Resume plugin privacy provider.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 namespace local_smart_resume\privacy;
 defined('MOODLE_INTERNAL') || die();
 use core_privacy\local\metadata\null_provider;
-use core_privacy\local\metadata\provider as metadata_provider;
 /**
 * Privacy provider for the local_smart_resume plugin.
 *
 * This plugin does not store any personal data. It only reads existing completion data
 * to enhance the UI.
 */
-class provider implements metadata_provider, null_provider {
+class provider implements null_provider {
 /**
 * Get the language string identifier with the component's language
 * file to explain why this plugin stores no data.
@@ -51,6 +64,13 @@ return 'privacy:metadata';
 
 --- ./classes/hook/before_footer.php: ---
 <?php
+/**
+* Smart Resume plugin before_footer hook.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 namespace local_smart_resume\hook;
 use core\hook\output\before_footer_html_generation;
 defined('MOODLE_INTERNAL') || die();
@@ -109,6 +129,13 @@ $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$strings, $firs
 }
 
 --- ./amd/src/main.js: ---
+/**
+* Smart Resume AMD module.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 define(['jquery'], function($) {
 return {
 init: function(strings, targetCmid) {
@@ -158,6 +185,13 @@ targetElement.append(labelHtml);
 
 --- ./lang/es/local_smart_resume.php: ---
 <?php
+/**
+* Smart Resume plugin Spanish language strings.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Reanudar Inteligente';
 $string['nextactivity'] = 'Siguiente Actividad';
@@ -167,6 +201,13 @@ $string['privacy:metadata'] = 'El plugin Reanudar Inteligente no almacena ningú
 
 --- ./lang/en/local_smart_resume.php: ---
 <?php
+/**
+* Smart Resume plugin English language strings.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Smart Resume';
 $string['nextactivity'] = 'Next Activity';
@@ -176,6 +217,13 @@ $string['privacy:metadata'] = 'The Smart Resume plugin does not store any person
 
 --- ./version.php: ---
 <?php
+/**
+* Smart Resume plugin version information.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'local_smart_resume';
 $plugin->version   = 2026030403;
@@ -185,11 +233,25 @@ $plugin->release   = '1.1';
 
 --- ./lib.php: ---
 <?php
+/**
+* Smart Resume plugin library functions.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 defined('MOODLE_INTERNAL') || die();
 // This file is kept intentionally empty as functions have been migrated to classes/hooks.
 
 --- ./db/hooks.php: ---
 <?php
+/**
+* Smart Resume plugin hooks registration.
+*
+* @package    local_smart_resume
+* @copyright  2025 Héctor Eduardo Terán Canelones
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 defined('MOODLE_INTERNAL') || die();
 $callbacks = [
 [

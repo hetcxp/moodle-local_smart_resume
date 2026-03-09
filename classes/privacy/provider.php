@@ -1,10 +1,17 @@
 <?php
+/**
+ * Smart Resume plugin privacy provider.
+ *
+ * @package    local_smart_resume
+ * @copyright  2025 Héctor Eduardo Terán Canelones
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace local_smart_resume\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
 use core_privacy\local\metadata\null_provider;
-use core_privacy\local\metadata\provider as metadata_provider;
 
 /**
  * Privacy provider for the local_smart_resume plugin.
@@ -12,7 +19,7 @@ use core_privacy\local\metadata\provider as metadata_provider;
  * This plugin does not store any personal data. It only reads existing completion data
  * to enhance the UI.
  */
-class provider implements metadata_provider, null_provider {
+class provider implements null_provider {
 
     /**
      * Get the language string identifier with the component's language

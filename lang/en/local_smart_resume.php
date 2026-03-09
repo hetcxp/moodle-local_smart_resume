@@ -1,4 +1,12 @@
 <?php
+/**
+ * Smart Resume plugin English language strings.
+ *
+ * @package    local_smart_resume
+ * @copyright  2025 Héctor Eduardo Terán Canelones
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Smart Resume';

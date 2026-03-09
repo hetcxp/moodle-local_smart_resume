@@ -1,3 +1,11 @@
+/**
+ * Smart Resume AMD module.
+ *
+ * @package    local_smart_resume
+ * @copyright  2025 Héctor Eduardo Terán Canelones
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 define(['jquery'], function($) {
     return {
         init: function(strings, targetCmid) {
