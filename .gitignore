@@ -1,5 +1,16 @@
-/node_modules
+# Herramientas de desarrollo locales
+contexto.sh
+smart_resume_compressed.txt
+
+# Archivos del sistema operativo
 .DS_Store
-/vendor
-config.php
-test_access.txt
+Thumbs.db
+
+# Carpetas de IDEs y editores
+.vscode/
+.idea/
+*.swp
+
+# Dependencias de desarrollo (si se usaran)
+node_modules/
+vendor/
