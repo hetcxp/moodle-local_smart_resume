@@ -1,0 +1,24 @@
+# Reglas de Desarrollo para local_smart_resume (Moodle 4.5+)
+
+## 1. Estándares de Codificación y Boilerplate
+- [cite_start]**Encabezados:** Cada nuevo archivo PHP debe incluir el boilerplate de licencia GPL v3+ con el copyright "2025 Héctor Eduardo Terán Canelones"[cite: 8, 18, 66].
+- [cite_start]**Seguridad Interna:** Todos los archivos PHP deben comenzar con `defined('MOODLE_INTERNAL') || die();` inmediatamente después del bloque de comentarios del encabezado[cite: 2, 9, 20].
+- **Moodle Coding Style:** Seguir estrictamente las normas de Moodle (basadas en PSR-12). Uso de camelCase para métodos y snake_case para variables locales.
+
+## 2. Compatibilidad con Moodle 4.5
+- [cite_start]**Versión Mínima:** Actualizar el archivo `version.php` para reflejar el requerimiento de Moodle 4.5 si se utilizan APIs nuevas (actualmente configurado para 4.0+).
+- [cite_start]**Uso de Hooks:** Priorizar siempre el uso de `db/hooks.php` sobre los antiguos callbacks de `lib.php`[cite: 75, 81].
+- **Output:** Al inyectar HTML o JS, asegurar la compatibilidad con el tema Boost y el uso de componentes core.
+
+## 3. Seguridad y Privacidad
+- **Acceso:** Verificar siempre las capacidades del usuario antes de ejecutar lógica sensible. [cite_start]Aunque el plugin es de lectura de completitud, mantener el chequeo de `$cm->uservisible` es obligatorio[cite: 26].
+- **Privacy API:** El archivo `classes/privacy/provider.php` debe mantenerse actualizado. [cite_start]Si en el futuro el plugin guarda preferencias de usuario (ej. "no volver a mostrar"), se debe migrar de `null_provider` a los interfaces de almacenamiento correspondientes[cite: 11].
+- **Limpieza de Datos:** Usar siempre `required_param()` o `optional_param()` para cualquier entrada externa (GET/POST).
+
+## 4. Javascript (AMD)
+- [cite_start]**Modernización:** Migrar de `define(['jquery'], ...)` a módulos ESM nativos si el soporte del sitio lo permite, o asegurar que el uso de jQuery sea mínimo y compatible con las versiones actuales de Moodle[cite: 43].
+- **Cadenas de texto:** Nunca escribir texto directamente en JS. [cite_start]Pasar siempre los strings a través de `$PAGE->requires->js_call_amd` utilizando `get_string()`[cite: 23, 30].
+
+## 5. Rendimiento (8GB RAM Optimization)
+- **Indexación:** Ignorar carpetas `node_modules/`, `vendor/` y `.git/` para evitar saturar la memoria del Mac M1.
+- [cite_start]**Consultas:** Utilizar `get_fast_modinfo()` para iterar sobre actividades del curso, evitando consultas directas a la base de datos dentro de bucles[cite: 25].

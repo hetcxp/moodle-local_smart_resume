@@ -34,12 +34,26 @@ get_string('enable_desc', 'local_smart_resume'),
 
 --- ./classes/privacy/provider.php: ---
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 /**
 * Smart Resume plugin privacy provider.
 *
 * @package    local_smart_resume
 * @copyright  2025 Héctor Eduardo Terán Canelones
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 namespace local_smart_resume\privacy;
 defined('MOODLE_INTERNAL') || die();
@@ -64,12 +78,26 @@ return 'privacy:metadata';
 
 --- ./classes/hook/before_footer.php: ---
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 /**
 * Smart Resume plugin before_footer hook.
 *
 * @package    local_smart_resume
 * @copyright  2025 Héctor Eduardo Terán Canelones
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 namespace local_smart_resume\hook;
 use core\hook\output\before_footer_html_generation;
@@ -129,12 +157,26 @@ $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$strings, $firs
 }
 
 --- ./amd/src/main.js: ---
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 /**
 * Smart Resume AMD module.
 *
 * @package    local_smart_resume
 * @copyright  2025 Héctor Eduardo Terán Canelones
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 define(['jquery'], function($) {
 return {
@@ -185,12 +227,26 @@ targetElement.append(labelHtml);
 
 --- ./lang/es/local_smart_resume.php: ---
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 /**
 * Smart Resume plugin Spanish language strings.
 *
 * @package    local_smart_resume
 * @copyright  2025 Héctor Eduardo Terán Canelones
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Reanudar Inteligente';
@@ -201,12 +257,26 @@ $string['privacy:metadata'] = 'El plugin Reanudar Inteligente no almacena ningú
 
 --- ./lang/en/local_smart_resume.php: ---
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 /**
 * Smart Resume plugin English language strings.
 *
 * @package    local_smart_resume
 * @copyright  2025 Héctor Eduardo Terán Canelones
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Smart Resume';
@@ -217,40 +287,82 @@ $string['privacy:metadata'] = 'The Smart Resume plugin does not store any person
 
 --- ./version.php: ---
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 /**
 * Smart Resume plugin version information.
 *
 * @package    local_smart_resume
 * @copyright  2025 Héctor Eduardo Terán Canelones
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'local_smart_resume';
-$plugin->version   = 2026030900;
+$plugin->version   = 2026030901;
 $plugin->requires  = 2022041900; // Moodle 4.0+
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->release   = '1.1';
 
 --- ./lib.php: ---
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 /**
 * Smart Resume plugin library functions.
 *
 * @package    local_smart_resume
 * @copyright  2025 Héctor Eduardo Terán Canelones
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 defined('MOODLE_INTERNAL') || die();
 // This file is kept intentionally empty as functions have been migrated to classes/hooks.
 
 --- ./db/hooks.php: ---
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
 /**
 * Smart Resume plugin hooks registration.
 *
 * @package    local_smart_resume
 * @copyright  2025 Héctor Eduardo Terán Canelones
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+* @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 defined('MOODLE_INTERNAL') || die();
 $callbacks = [
