@@ -67,7 +67,7 @@ class before_footer {
             $has_student_role = false;
             foreach ($user_roles as $role) {
                 // Chequear por el shortname estándar o el arquetipo de estudiante.
-                if ($role->shortname === 'student' || $role->archetype === 'student') {
+                if ($role->shortname === 'student' || (isset($role->archetype) && $role->archetype === 'student')) {
                     $has_student_role = true;
                     break;
                 }
