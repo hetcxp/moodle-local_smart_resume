@@ -7,7 +7,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// MOODLE_INTERNAL is already defined at line 10. No changes needed.
+defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
     $settings = new admin_settingpage('local_smart_resume', get_string('pluginname', 'local_smart_resume'));
