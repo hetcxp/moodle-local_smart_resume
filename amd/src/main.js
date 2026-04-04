@@ -14,62 +14,62 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Smart Resume ESM module.
+ * Smart Resume AMD module (Standard format for max compatibility).
  *
  * @package    local_smart_resume
  * @copyright  2025 Héctor Eduardo Terán Canelones
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+define([], function() {
+    return {
+        init: function(strings, targetCmid) {
+            var label = strings.nextactivity || "Next Activity";
+            
+            // Check if strings or targetCmid were swapped or combined (defensive coding).
+            if (typeof strings === 'object' && strings.targetCmid && !targetCmid) {
+                targetCmid = strings.targetCmid;
+                label = strings.label || strings.nextactivity || label;
+            }
 
-/**
- * Validates and highlights the next activity in the course.
- *
- * @param {Object} params Parameters passed from PHP.
- * @param {string} params.label The HTML for the label (rendered by PHP).
- * @param {Number} params.targetCmid The course module ID of the first incomplete activity.
- */
-export const init = ({label, targetCmid}) => {
-    if (!targetCmid) {
-        return;
-    }
+            if (!targetCmid) {
+                return;
+            }
 
-    // Find the activity element using the standard Moodle module ID.
-    let firstIncomplete = document.getElementById(`module-${targetCmid}`);
+            // Try multiple selectors common in Moodle 4.x.
+            var selectors = [
+                '#module-' + targetCmid,                        // Classic/Boost ID
+                '[data-id="' + targetCmid + '"]',               // Common in 4.x activity wrappers
+                '[data-cmid="' + targetCmid + '"]',             // Custom or newer formats
+                '.activity[id*="section-"][id*="-item-' + targetCmid + '"]' // Some course formats
+            ];
 
-    // Fallback for some custom themes that might use a different attribute.
-    if (!firstIncomplete) {
-        firstIncomplete = document.querySelector(`[data-cmid="${targetCmid}"]`);
-    }
+            var targetElement = null;
+            for (var i = 0; i < selectors.length; i++) {
+                targetElement = document.querySelector(selectors[i]);
+                if (targetElement) {
+                    break;
+                }
+            }
 
-    if (!firstIncomplete) {
-        return;
-    }
+            if (!targetElement) {
+                return;
+            }
 
-    // Ensure we are targeting the main activity card for styling.
-    const selectors = '.activity-item, .activityinstance, .contentwithoutlink';
-    const activityCard = firstIncomplete.querySelector(selectors);
-    const targetElement = activityCard || firstIncomplete;
+            // Scroll to the element.
+            targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
 
-    // Scroll to the element.
-    targetElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-    });
+            // Add highlight class.
+            targetElement.classList.add('local-smart-resume-highlight');
 
-    // Add highlight class.
-    targetElement.classList.add('local-smart-resume-highlight');
+            // Remove any existing labels to avoid duplication.
+            var existingLabels = targetElement.querySelectorAll('.local-smart-resume-label');
+            existingLabels.forEach(function(el) { el.remove(); });
 
-    // Add label.
-    // Remove any existing labels first.
-    const existingLabels = targetElement.querySelectorAll('.local-smart-resume-label');
-    existingLabels.forEach(el => el.remove());
-
-    // Create label from the HTML string provided by PHP.
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = label.trim();
-    const labelElement = tempDiv.firstChild;
-
-    if (labelElement) {
-        targetElement.appendChild(labelElement);
-    }
-};
+            // Insert label HTML fragment.
+            targetElement.insertAdjacentHTML('beforeend', label);
+        }
+    };
+});

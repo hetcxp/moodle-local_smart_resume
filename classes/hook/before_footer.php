@@ -40,95 +40,65 @@ class before_footer {
     public static function execute(before_footer_html_generation $hook): void {
         global $PAGE, $USER, $CFG;
 
-        // Seguridad: Verificar acceso de usuario válido ($USER no guest, isloggedin).
-        if (!isloggedin() || isguestuser()) {
+        // Security: Ensure it's a real course page (not frontpage ID 1) and user is logged in.
+        if ($PAGE->course->id <= 1 || !isloggedin() || isguestuser()) {
             return;
         }
 
-        // Optimización: Verificar que la completitud esté habilitada a nivel de sitio.
-        // Esto evita procesamientos y carga de librerías innecesarios.
+        // Check if completion is enabled.
         if (empty($CFG->enablecompletion)) {
             return;
         }
 
-        // Check if plugin is enabled globally.
-        if (!get_config('local_smart_resume', 'enable')) {
+        $course = $PAGE->course;
+        require_once($CFG->libdir.'/completionlib.php');
+        $completion = new \completion_info($course);
+
+        if (!$completion->is_enabled()) {
             return;
         }
 
-        // Check if we are on the main course page (seguridad y prevención de errores nulos).
-        if ($PAGE->pagelayout === 'course' && $PAGE->has_set_url() && strpos($PAGE->url->get_path(), '/course/view.php') !== false) {
-            $course = $PAGE->course;
+        $modinfo = get_fast_modinfo($course);
+        $cms = $modinfo->get_cms();
+        
+        $first_incomplete_cmid = null;
 
-            // Instanciar el contexto del curso para evaluar los roles del usuario.
-            $context = \context_course::instance($course->id);
-            $user_roles = get_user_roles($context, $USER->id, true);
+        foreach ($cms as $cm) {
+            // Check if this activity IS trackable according to the completion API.
+            if (!$cm->uservisible || !$completion->is_enabled($cm)) {
+                continue;
+            }
             
-            $has_student_role = false;
-            foreach ($user_roles as $role) {
-                // Chequear por el shortname estándar o el arquetipo de estudiante.
-                if ($role->shortname === 'student' || (isset($role->archetype) && $role->archetype === 'student')) {
-                    $has_student_role = true;
-                    break;
-                }
+            $completion_data = $completion->get_data($cm, true, $USER->id);
+            
+            if ($completion_data->completionstate == 0) { // 0 = COMPLETION_INCOMPLETE.
+                $first_incomplete_cmid = $cm->id;
+                break;
             }
-
-            // Si a pesar de tener otros roles, NO posee el rol de estudiante explícitamente, cancelamos el proceso.
-            if (!$has_student_role) {
-                return;
-            }
-
-            // Ensure completion lib is loaded dynamically only when it's necessary.
-            require_once($CFG->libdir.'/completionlib.php');
-            $completion = new \completion_info($course);
-
-            // Validar si el curso especifico tiene completitud habilitada.
-            if (!$completion->is_enabled()) {
-                return;
-            }
-
-            // Determine the first incomplete activity.
-            $first_incomplete_cmid = null;
-            $modinfo = get_fast_modinfo($course);
-
-            foreach ($modinfo->get_cms() as $cm) {
-                // Seguridad interna: chequeo de visibilidad (Obligatorio regla 3).
-                if (!$cm->uservisible) {
-                    continue;
-                }
-                
-                // Skip if completion is not tracked for this activity.
-                if ($cm->completion == COMPLETION_TRACKING_NONE) {
-                    continue;
-                }
-                
-                // Moodle Coding Style: snake_case variables.
-                $completion_data = $completion->get_data($cm, true, $USER->id);
-                
-                // Check if incomplete (0).
-                if ($completion_data->completionstate == COMPLETION_INCOMPLETE) {
-                    $first_incomplete_cmid = $cm->id;
-                    break;
-                }
-            }
-
-            // Preparar strings para el JS.
-            $nextactivitystring = get_string('nextactivity', 'local_smart_resume');
-
-            // Pillar 2: Output API (Renderable & Templatable).
-            $renderable = new \local_smart_resume\output\resume_label($nextactivitystring, $first_incomplete_cmid);
-            $renderer = $PAGE->get_renderer('local_smart_resume');
-            $labelhtml = $renderer->render($renderable);
-
-            // Pillar 3: ESM (JavaScript Modules).
-            // Moodle 4.5+ uses js_call_amd to load ESM from amd/src.
-            // We pass the rendered HTML and the CMID in a single params object.
-            $params = [
-                'label' => $labelhtml,
-                'targetCmid' => $first_incomplete_cmid
-            ];
-
-            $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$params]);
         }
+
+        if ($first_incomplete_cmid === null) {
+            return;
+        }
+
+        // Preparar strings para el JS.
+        $nextactivitystring = get_string('nextactivity', 'local_smart_resume');
+
+        // Pillar 2: Output API (Renderable & Templatable).
+        $renderable = new \local_smart_resume\output\resume_label($nextactivitystring, $first_incomplete_cmid);
+        $renderer = $PAGE->get_renderer('local_smart_resume');
+        
+        try {
+            $labelhtml = $renderer->render($renderable);
+        } catch (\Exception $e) {
+            return;
+        }
+
+        // Pillar 3: ESM (JavaScript Modules).
+        $strings = [
+            'nextactivity' => $labelhtml
+        ];
+
+        $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$strings, $first_incomplete_cmid]);
     }
 }

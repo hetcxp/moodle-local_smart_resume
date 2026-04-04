@@ -24,26 +24,38 @@
 /* Estilo para el contenedor de la actividad resaltada */
 .local-smart-resume-highlight {
     border: 2px solid #0f6cbf !important; /* Azul estándar de Moodle */
-    border-radius: 0.5rem;
-    position: relative !important; /* Necesario para posicionar la etiqueta */
-    box-shadow: 0 0 0 0.2rem rgba(15, 108, 191, 0.25);
-    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    border-radius: 0.75rem !important;
+    position: relative !important;
+    box-shadow: 0 0 15px rgba(15, 108, 191, 0.4);
+    transition: box-shadow 0.5s ease-in-out;
     z-index: 1;
 }
 
 /* Estilo para la etiqueta "Siguiente Actividad" */
 .local-smart-resume-label {
     position: absolute;
-    top: -14px;
-    right: 16px;
+    top: -12px;
+    right: 20px;
     background-color: #0f6cbf;
-    color: #fff;
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    line-height: 1;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 10;
-    pointer-events: none; /* Permite hacer clic a través de la etiqueta */
+    color: #ffffff;
+    padding: 0.3rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    z-index: 100;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    white-space: nowrap; /* Fuerza a que todo el texto esté en una sola línea */
+}
+
+/* Evitar que se aplique doble si hay nesting accidental */
+.local-smart-resume-label .local-smart-resume-label {
+    position: static !important;
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+    margin: 0 !important;
 }
