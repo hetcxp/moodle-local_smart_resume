@@ -112,13 +112,23 @@ class before_footer {
                 }
             }
 
-            // Preparar strings para el JS (Regla 4 Cadenas de Texto AMD).
-            $strings = [
-                'nextactivity' => get_string('nextactivity', 'local_smart_resume')
+            // Preparar strings para el JS.
+            $nextactivitystring = get_string('nextactivity', 'local_smart_resume');
+
+            // Pillar 2: Output API (Renderable & Templatable).
+            $renderable = new \local_smart_resume\output\resume_label($nextactivitystring, $first_incomplete_cmid);
+            $renderer = $PAGE->get_renderer('local_smart_resume');
+            $labelhtml = $renderer->render($renderable);
+
+            // Pillar 3: ESM (JavaScript Modules).
+            // Moodle 4.5+ uses js_call_amd to load ESM from amd/src.
+            // We pass the rendered HTML and the CMID in a single params object.
+            $params = [
+                'label' => $labelhtml,
+                'targetCmid' => $first_incomplete_cmid
             ];
 
-            // Initialize the AMD module con los datos de forma segura.
-            $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$strings, $first_incomplete_cmid]);
+            $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$params]);
         }
     }
 }
