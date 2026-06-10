@@ -1,6 +1,7 @@
 # --- Herramientas de desarrollo locales ---
-contexto.sh
-smart_resume_compressed.txt
+.llm_build
+tests
+
 # Archivos de reglas de otros editores (por si acaso quedaron)
 .cursorrules
 
@@ -16,12 +17,14 @@ Thumbs.db
 .idea/
 *.swp
 *.bak
+
 # Evitar que Antigravity se auto-indexe si crea logs locales
 .antigravity/
 
 # --- Dependencias y Moodle ---
 node_modules/
 vendor/
+
 # Si usas herramientas de compilación de Moodle (como Grunt o Shifter)
 .grunt/
 .npm/
