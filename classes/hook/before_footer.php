@@ -41,7 +41,17 @@ class before_footer {
         global $PAGE, $USER, $CFG;
 
         // Security: Ensure it's a real course page (not frontpage ID 1) and user is logged in.
-        if ($PAGE->course->id <= 1 || !isloggedin() || isguestuser()) {
+        if ($PAGE->course->id == SITEID || !isloggedin() || isguestuser()) {
+            return;
+        }
+
+        // Check if the plugin is globally enabled.
+        if (!get_config('local_smart_resume', 'enable')) {
+            return;
+        }
+
+        // Feature: Only target students (exclude users with editing/management capabilities).
+        if (has_capability('moodle/course:update', $PAGE->context) || has_capability('moodle/course:manageactivities', $PAGE->context)) {
             return;
         }
 
@@ -71,7 +81,7 @@ class before_footer {
             
             $completion_data = $completion->get_data($cm, true, $USER->id);
             
-            if ($completion_data->completionstate == 0) { // 0 = COMPLETION_INCOMPLETE.
+            if ($completion_data->completionstate == COMPLETION_INCOMPLETE) {
                 $first_incomplete_cmid = $cm->id;
                 break;
             }
@@ -91,6 +101,7 @@ class before_footer {
         try {
             $labelhtml = $renderer->render($renderable);
         } catch (\Exception $e) {
+            debugging($e->getMessage(), DEBUG_DEVELOPER);
             return;
         }
 

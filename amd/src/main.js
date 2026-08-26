@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Smart Resume AMD module (Standard format for max compatibility).
+ * Smart Resume ESM module.
  *
  * @copyright  2025 Héctor Eduardo Terán Canelones
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
