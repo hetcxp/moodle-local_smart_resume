@@ -55,6 +55,16 @@ class before_footer {
             return;
         }
 
+        // Check if the plugin is globally enabled.
+        if (!get_config('local_smart_resume', 'enable')) {
+            return;
+        }
+
+        // Feature: Only target students (exclude users with editing/management capabilities).
+        if (has_capability('moodle/course:update', $PAGE->context) || has_capability('moodle/course:manageactivities', $PAGE->context)) {
+            return;
+        }
+
         // Check if completion is enabled.
         if (empty($CFG->enablecompletion)) {
             return;
