@@ -28,12 +28,7 @@
  * @param {Number|String} targetCmid Target CMID
  */
 export const init = (strings, targetCmid) => {
-    let label = strings.nextactivity || "Next Activity";
-
-    if (typeof strings === 'object' && strings.targetCmid && !targetCmid) {
-        targetCmid = strings.targetCmid;
-        label = strings.label || strings.nextactivity || label;
-    }
+    const label = strings?.nextactivity ?? '';
 
     if (!targetCmid) {
         return;
@@ -58,15 +53,26 @@ export const init = (strings, targetCmid) => {
         return;
     }
 
-    targetElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-    });
-
+    // Mark activity and insert badge.
     targetElement.classList.add('local-smart-resume-highlight');
 
     const existingLabels = targetElement.querySelectorAll('.local-smart-resume-label');
     existingLabels.forEach(el => el.remove());
 
     targetElement.insertAdjacentHTML('beforeend', label);
+
+    // Detect collapsed section.
+    const parentSection = targetElement.closest('.course-section, [data-for="section"], .section');
+    const isCollapsed = parentSection && (
+        parentSection.classList.contains('collapsed') ||
+        parentSection.getAttribute('aria-expanded') === 'false' ||
+        parentSection.querySelector('.collapsed, [aria-expanded="false"]') !== null
+    );
+
+    if (isCollapsed) {
+        parentSection.classList.add('local-smart-resume-section-highlight');
+        parentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 };
