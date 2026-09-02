@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Smart Resume plugin renderer.
@@ -24,10 +24,17 @@
 
 namespace local_smart_resume\output;
 
-use plugin_renderer_base;
-
 defined('MOODLE_INTERNAL') || die();
 
+use plugin_renderer_base;
+
+/**
+ * Smart Resume plugin renderer class.
+ *
+ * @package    local_smart_resume
+ * @copyright  2025 Héctor Eduardo Terán Canelones
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class renderer extends plugin_renderer_base {
     /**
      * Render the resume label.

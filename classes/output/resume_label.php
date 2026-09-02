@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Smart Resume renderable for the resume label.
@@ -24,12 +24,19 @@
 
 namespace local_smart_resume\output;
 
+defined('MOODLE_INTERNAL') || die();
+
 use renderable;
 use templatable;
 use renderer_base;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Smart Resume renderable for the resume label.
+ *
+ * @package    local_smart_resume
+ * @copyright  2025 Héctor Eduardo Terán Canelones
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class resume_label implements renderable, templatable {
     /** @var string The text for the label. */
     protected $label;

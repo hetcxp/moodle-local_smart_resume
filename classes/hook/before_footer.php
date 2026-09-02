@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
  * Smart Resume plugin before_footer hook.
@@ -24,12 +24,16 @@
 
 namespace local_smart_resume\hook;
 
-use core\hook\output\before_footer_html_generation;
-
 defined('MOODLE_INTERNAL') || die();
+
+use core\hook\output\before_footer_html_generation;
 
 /**
  * Hook to inject Smart Resume AMD module on course view pages.
+ *
+ * @package    local_smart_resume
+ * @copyright  2025 Héctor Eduardo Terán Canelones
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class before_footer {
     /**
@@ -42,11 +46,6 @@ class before_footer {
 
         // Security: Ensure it's a real course page (not frontpage ID 1) and user is logged in.
         if ($PAGE->course->id == SITEID || !isloggedin() || isguestuser()) {
-            return;
-        }
-
-        // Check if the plugin is globally enabled.
-        if (!get_config('local_smart_resume', 'enable')) {
             return;
         }
 
