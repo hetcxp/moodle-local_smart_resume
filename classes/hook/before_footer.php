@@ -49,13 +49,38 @@ class before_footer {
             return;
         }
 
+        // Only execute on course view pages.
+        $ispagetypecourse = false;
+        try {
+            if (!empty($PAGE->pagetype) && str_starts_with($PAGE->pagetype, 'course-view-')) {
+                $ispagetypecourse = true;
+            }
+        } catch (\Throwable $e) {
+            // Pagetype might not be set in some contexts.
+        }
+
+        $isurlcourse = false;
+        try {
+            if ($PAGE->has_set_url() && $PAGE->url->compare(new \moodle_url('/course/view.php'), URL_MATCH_BASE)) {
+                $isurlcourse = true;
+            }
+        } catch (\Throwable $e) {
+            // URL might not be set.
+        }
+
+        if (!$ispagetypecourse && !$isurlcourse) {
+            return;
+        }
+
         // Check if the plugin is globally enabled.
         if (!get_config('local_smart_resume', 'enable')) {
             return;
         }
 
-        // Feature: Only target students (exclude users with editing/management capabilities).
-        if (has_capability('moodle/course:update', $PAGE->context) || has_capability('moodle/course:manageactivities', $PAGE->context)) {
+        // Feature: RBAC check - exclude managers unless preview_for_admins is enabled.
+        $ismanager = has_capability('moodle/course:update', $PAGE->context) || has_capability('moodle/course:manageactivities', $PAGE->context);
+        $previewenabled = (bool) get_config('local_smart_resume', 'preview_for_admins');
+        if ($ismanager && !$previewenabled) {
             return;
         }
 
@@ -65,7 +90,7 @@ class before_footer {
         }
 
         $course = $PAGE->course;
-        require_once($CFG->libdir.'/completionlib.php');
+        require_once($CFG->libdir . '/completionlib.php');
         $completion = new \completion_info($course);
 
         if (!$completion->is_enabled()) {
@@ -74,34 +99,34 @@ class before_footer {
 
         $modinfo = get_fast_modinfo($course);
         $cms = $modinfo->get_cms();
-        
-        $first_incomplete_cmid = null;
+
+        $firstincompletecmid = null;
 
         foreach ($cms as $cm) {
-            // Check if this activity IS trackable according to the completion API.
-            if (!$cm->uservisible || !$completion->is_enabled($cm)) {
+            // Check visibility on course page, stealth status, user visibility, and completion tracking.
+            if (!$cm->uservisible || !$cm->is_visible_on_course_page() || $cm->is_stealth() || !$completion->is_enabled($cm)) {
                 continue;
             }
-            
-            $completion_data = $completion->get_data($cm, true, $USER->id);
-            
-            if ($completion_data->completionstate == COMPLETION_INCOMPLETE) {
-                $first_incomplete_cmid = $cm->id;
+
+            $completiondata = $completion->get_data($cm, true, $USER->id);
+
+            if ($completiondata->completionstate == COMPLETION_INCOMPLETE) {
+                $firstincompletecmid = $cm->id;
                 break;
             }
         }
 
-        if ($first_incomplete_cmid === null) {
+        if ($firstincompletecmid === null) {
             return;
         }
 
-        // Preparar strings para el JS.
+        // Prepare strings for JS.
         $nextactivitystring = get_string('nextactivity', 'local_smart_resume');
 
-        // Pillar 2: Output API (Renderable & Templatable).
-        $renderable = new \local_smart_resume\output\resume_label($nextactivitystring, $first_incomplete_cmid);
+        // Output API (Renderable & Templatable).
+        $renderable = new \local_smart_resume\output\resume_label($nextactivitystring, $firstincompletecmid);
         $renderer = $PAGE->get_renderer('local_smart_resume');
-        
+
         try {
             $labelhtml = $renderer->render($renderable);
         } catch (\Exception $e) {
@@ -109,11 +134,11 @@ class before_footer {
             return;
         }
 
-        // Pillar 3: ESM (JavaScript Modules).
+        // ESM (JavaScript Modules).
         $strings = [
-            'nextactivity' => $labelhtml
+            'nextactivity' => $labelhtml,
         ];
 
-        $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$strings, $first_incomplete_cmid]);
+        $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$strings, $firstincompletecmid]);
     }
 }

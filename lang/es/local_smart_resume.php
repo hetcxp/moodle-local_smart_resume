@@ -24,8 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Reanudar Inteligente';
-$string['nextactivity'] = 'Siguiente Actividad';
-$string['enable'] = 'Habilitar Reanudar Inteligente';
-$string['enable_desc'] = 'Si se habilita, el plugin resaltará y se desplazará automáticamente a la primera actividad incompleta en los cursos.';
-$string['privacy:metadata'] = 'El plugin Reanudar Inteligente no almacena ningún dato personal.';
+$string['pluginname'] = 'Smart Resume';
+$string['nextactivity'] = 'Siguiente actividad';
+$string['enable'] = 'Habilitar Smart Resume';
+$string['enable_desc'] = 'Si se activa, el plugin resaltará automáticamente y se desplazará a la primera actividad incompleta en los cursos.';
+$string['preview_for_admins'] = 'Permitir previsualización a docentes y administradores';
+$string['preview_for_admins_desc'] = 'Permite a usuarios con permisos de edición y administración previsualizar el indicador de Smart Resume en cursos para propósitos de verificación.';
+$string['privacy:metadata'] = 'El plugin Smart Resume no almacena datos personales.';

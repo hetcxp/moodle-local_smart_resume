@@ -28,4 +28,6 @@ $string['pluginname'] = 'Smart Resume';
 $string['nextactivity'] = 'Next Activity';
 $string['enable'] = 'Enable Smart Resume';
 $string['enable_desc'] = 'If enabled, the plugin will automatically highlight and scroll to the first incomplete activity in courses.';
+$string['preview_for_admins'] = 'Allow preview for teachers and administrators';
+$string['preview_for_admins_desc'] = 'Allows users with editing and management capabilities to preview the Smart Resume indicator in courses for verification purposes.';
 $string['privacy:metadata'] = 'The Smart Resume plugin does not store any personal data.';

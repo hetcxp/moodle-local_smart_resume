@@ -59,3 +59,10 @@
     font-size: inherit !important;
     margin: 0 !important;
 }
+
+/* Estilo para la sección colapsada que contiene la siguiente actividad */
+.local-smart-resume-section-highlight {
+    border-left: 4px solid #0f6cbf !important;
+    box-shadow: 0 0 12px rgba(15, 108, 191, 0.25) !important;
+    transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}

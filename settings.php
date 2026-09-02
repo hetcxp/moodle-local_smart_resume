@@ -34,4 +34,11 @@ if ($hassiteconfig) {
         get_string('enable_desc', 'local_smart_resume'),
         1 // Default to enabled
     ));
+
+    $settings->add(new admin_setting_configcheckbox(
+        'local_smart_resume/preview_for_admins',
+        get_string('preview_for_admins', 'local_smart_resume'),
+        get_string('preview_for_admins_desc', 'local_smart_resume'),
+        0 // Default to disabled
+    ));
 }
