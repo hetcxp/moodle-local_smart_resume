@@ -42,11 +42,14 @@
     border-radius: 2rem;
     font-size: 0.8rem;
     font-weight: bold;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
     z-index: 100;
     pointer-events: none;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    white-space: nowrap; /* Fuerza a que todo el texto esté en una sola línea */
+    max-width: calc(100% - 40px);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 /* Evitar que se aplique doble si hay nesting accidental */

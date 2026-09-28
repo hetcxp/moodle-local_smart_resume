@@ -1,33 +1,91 @@
-# Smart Resume (Reanudar Inteligente)
+# Smart Resume (`local_smart_resume`)
 
-**Smart Resume** es un plugin local para Moodle diseñado para mejorar la experiencia del estudiante (UX) redirigiéndolo y resaltando automáticamente la primera actividad incompleta dentro de la vista del curso.
-
-## Características principales
-* **Enfoque en Estudiantes con Previsualización de Gestión**: Por defecto, opera exclusivamente para estudiantes. Incluye una opción de configuración para permitir que administradores y docentes previsualicen el indicador en el curso para fines de verificación.
-* **Soporte para Secciones Colapsadas**: Si la actividad pendiente se encuentra dentro de una sección plegada, el plugin resalta suavemente la cabecera/tarjeta de la sección (`.local-smart-resume-section-highlight`) y sitúa el scroll para orientar al alumno sin romper el diseño del acordeón.
-* **Scroll Automático y Badge Visual**: Aplica un borde distintivo, sombra suave y una etiqueta ("Siguiente actividad") sobre el módulo pendiente.
-* **Filtro de Visibilidad Estricto**: Ignora actividades en modo stealth o no visibles en la página del curso, garantizando que el objetivo sea siempre accesible.
-* **Optimizado para el Core y Rendimiento**:
-  - Utiliza el sistema moderno de Hooks (`core\hook\output\before_footer_html_generation`).
-  - Restringido exclusivamente a páginas de curso (`course-view-*` / `/course/view.php`).
-  - No crea tablas adicionales en la base de datos y opera en memoria mediante la Completion API y `get_fast_modinfo`.
-
-## Requisitos
-* **Moodle**: 4.5 LTS o superior (requiere build `2024100700`+ con soporte para Hooks modernos).
-* **Rastreo de finalización**: Debe estar habilitado tanto a nivel de sitio (`enablecompletion`) como dentro de los ajustes del curso y en las actividades correspondientes.
-
-## Configuración
-En _Administración del sitio > Extensiones > Extensiones locales > Smart Resume_ (`/admin/settings.php?section=local_smart_resume`):
-* **Habilitar Smart Resume**: Activa o desactiva la funcionalidad de forma global.
-* **Permitir previsualización a docentes y administradores**: Permite que usuarios con capacidades de gestión (`moodle/course:update` o `moodle/course:manageactivities`) visualicen el indicador para pruebas.
-
-## Instalación
-1. Descarga o copia la carpeta `smart_resume` en el directorio `/local/` de tu instalación de Moodle (`/local/smart_resume`).
-2. Ve a _Administración del sitio > Notificaciones_ para registrar el plugin.
-3. Purga las cachés de ser necesario (_Administración del sitio > Desarrollo > Purgar cachés_ o via CLI `php admin/cli/purge_caches.php`).
-
-## Privacidad (GDPR)
-Este plugin cumple estrictamente con la **Privacy API** de Moodle (`local_smart_resume\privacy\provider`). No almacena, rastrea ni transfiere datos personales. Únicamente consulta el estado de finalización de actividades en tiempo real para renderizar la asistencia visual en frontend.
+Plugin local para Moodle diseñado para optimizar la experiencia de aprendizaje (UX), guiando y orientando automáticamente al estudiante hacia su primera actividad pendiente de finalización dentro de la vista principal del curso.
 
 ---
-Desarrollado por **Héctor Eduardo Terán Canelones**.
+
+## 🚀 Características principales
+
+- **🎯 Detección Inteligente en Tiempo Real**: Evalúa los criterios de finalización de actividades mediante la Completion API oficial de Moodle (`completion_info`).
+- **📜 Desplazamiento Adaptable (A11y)**: Sitúa automáticamente el viewport sobre la actividad objetivo respetando la preferencia del sistema operativo `prefers-reduced-motion` (conmutando de forma transparente entre scroll suave o instantáneo).
+- **💡 Indicador Visual Distintivo**: Aplica un contenedor de realce con borde distintivo Moodle (`#0f6cbf`), sombra suave y una insignia responsive ("Siguiente actividad") con reglas de contención de texto para evitar desbordamientos en pantallas móviles estrechas.
+- **📂 Compatibilidad con Secciones Colapsadas**: Si la tarea pendiente se encuentra dentro de un acordeón o sección cerrada, resalta la cabecera/tarjeta de la sección (`.local-smart-resume-section-highlight`) orientando al alumno sin alterar la estructura del tema.
+- **👁️ Modo Previsualización para Docentes y Administradores**: Opción en configuración para que usuarios con permisos de gestión (`moodle/course:update` o `moodle/course:manageactivities`) verifiquen visualmente el indicador durante el diseño del curso.
+- **🛡️ Filtro Estricto de Visibilidad y Permisos**: Respeta actividades ocultas, módulos en modo stealth y restricciones de acceso no cumplidas.
+- **⚡ Arquitectura de Alto Rendimiento y Desacoplada**:
+  - Conectado al hook moderno del core `core\hook\output\before_footer_html_generation`.
+  - Lógica de resolución delegada al servicio desacoplado `\local_smart_resume\service\resume_finder`.
+  - No añade tablas a la base de datos; opera en memoria aprovechando la caché por curso de la Completion API (`$wholecourse = true`) y `get_fast_modinfo`.
+  - Restringido exclusivamente a páginas de visualización de curso (`course-view-*` / `/course/view.php`).
+
+---
+
+## 📋 Requisitos
+
+- **Moodle**: 4.5 LTS o superior (`requires = 2024100700`).
+- **PHP**: 8.3 o superior.
+- **Rastreo de finalización**: Habilitado a nivel de plataforma (`$CFG->enablecompletion`), en la configuración del curso y en las actividades correspondientes.
+
+---
+
+## ⚙️ Configuración
+
+Ubicación: _Administración del sitio > Extensiones > Extensiones locales > Smart Resume_ (`/admin/settings.php?section=local_smart_resume`):
+
+| Ajuste | Clave | Por defecto | Descripción |
+|---|---|---|---|
+| **Habilitar Smart Resume** | `local_smart_resume/enable` | Activado (`1`) | Habilita o deshabilita la funcionalidad globalmente. |
+| **Permitir previsualización** | `local_smart_resume/preview_for_admins` | Desactivado (`0`) | Permite a docentes y administradores visualizar el indicador para pruebas. |
+
+---
+
+## 💻 Instalación
+
+1. Descarga o clona este repositorio en el directorio `local/smart_resume` de tu instalación Moodle:
+   ```bash
+   cd /ruta/hacia/moodle/local
+   git clone https://github.com/tu-usuario/moodle-local_smart_resume.git smart_resume
+   ```
+2. Accede como administrador a _Administración del sitio > Notificaciones_ para completar la instalación de la extensión.
+3. Si es necesario, purga las cachés de la plataforma desde _Administración del sitio > Desarrollo > Purgar cachés_ o vía CLI:
+   ```bash
+   php admin/cli/purge_caches.php
+   ```
+
+---
+
+## 🧪 Testing y Calidad de Código
+
+El plugin cuenta con una suite completa de verificación siguiendo los estándares de desarrollo de Moodle:
+
+- **Análisis Estático (CodeChecker)**:
+  ```bash
+  phpcs --standard=moodle --extensions=php local/smart_resume
+  ```
+  Cumple 100% las directrices oficiales de Moodle HQ (0 errores, 0 advertencias).
+
+- **Pruebas Unitarias (PHPUnit)**:
+  Suite dedicada `local_smart_resume_testsuite` con 9 escenarios:
+  ```bash
+  vendor/bin/phpunit --testsuite local_smart_resume_testsuite
+  ```
+  Cobertura de casos: portada, plugin inactivo, estudiante con actividad incompleta, curso completado, permisos docentes/admin, actividades stealth, páginas externas y páginas sin contexto de curso inicializado.
+
+- **Pruebas de Aceptación (Behat)**:
+  Escenarios BDD en `tests/behat/resume_label.feature` para validación interactiva de la etiqueta y desplazamiento tras completar actividades.
+
+- **Integración Continua (CI)**:
+  Workflow automatizado en `.github/workflows/ci.yml` ejecutando lint de sintaxis PHP y Moodle CodeChecker en PHP 8.3.
+
+---
+
+## 🔒 Privacidad y GDPR
+
+Cumple estrictamente con la **Privacy API** de Moodle mediante la implementación de `local_smart_resume\privacy\provider` (`null_provider`). Este plugin no almacena, procesa ni transmite datos personales de los usuarios.
+
+---
+
+## 📄 Licencia
+
+Este software se distribuye bajo la licencia **GNU General Public License v3.0** (o posterior). Consulta el archivo de licencia oficial para más detalles.
+Copyright (C) 2025 Héctor Eduardo Terán Canelones.

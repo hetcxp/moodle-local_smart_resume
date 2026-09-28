@@ -24,8 +24,6 @@
 
 namespace local_smart_resume\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use renderable;
 use templatable;
 use renderer_base;

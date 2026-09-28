@@ -1,0 +1,37 @@
+name: Moodle Plugin CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  static-analysis:
+    name: PHP Lint & Moodle CodeChecker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out plugin code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, xml, json
+          coverage: none
+
+      - name: PHP Syntax Check (php -l)
+        run: |
+          find . -name "*.php" -not -path "./vendor/*" -exec php -l {} +
+
+      - name: Install Moodle CodeChecker
+        run: |
+          git clone --depth 1 https://github.com/moodlehq/moodle-cs.git /tmp/moodle-cs
+          composer --working-dir=/tmp/moodle-cs install --no-dev --no-interaction --prefer-dist
+          /tmp/moodle-cs/vendor/bin/phpcs --config-set installed_paths /tmp/moodle-cs
+
+      - name: Run CodeChecker (moodle standard)
+        run: |
+          /tmp/moodle-cs/vendor/bin/phpcs --standard=moodle --extensions=php --ignore='amd/build/*' .

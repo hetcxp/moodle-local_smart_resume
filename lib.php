@@ -22,6 +22,4 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 // This file is kept intentionally empty as functions have been migrated to classes/hooks.

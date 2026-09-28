@@ -24,8 +24,6 @@
 
 namespace local_smart_resume\hook;
 
-defined('MOODLE_INTERNAL') || die();
-
 use core\hook\output\before_footer_html_generation;
 
 /**
@@ -44,8 +42,8 @@ class before_footer {
     public static function execute(before_footer_html_generation $hook): void {
         global $PAGE, $USER, $CFG;
 
-        // Security: Ensure it's a real course page (not frontpage ID 1) and user is logged in.
-        if ($PAGE->course->id == SITEID || !isloggedin() || isguestuser()) {
+        // Security: Ensure user is logged in and not a guest.
+        if (!isloggedin() || isguestuser()) {
             return;
         }
 
@@ -55,7 +53,7 @@ class before_footer {
             if (!empty($PAGE->pagetype) && str_starts_with($PAGE->pagetype, 'course-view-')) {
                 $ispagetypecourse = true;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable $e) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
             // Pagetype might not be set in some contexts.
         }
 
@@ -64,11 +62,21 @@ class before_footer {
             if ($PAGE->has_set_url() && $PAGE->url->compare(new \moodle_url('/course/view.php'), URL_MATCH_BASE)) {
                 $isurlcourse = true;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable $e) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
             // URL might not be set.
         }
 
         if (!$ispagetypecourse && !$isurlcourse) {
+            return;
+        }
+
+        // Ensure course is set and not frontpage.
+        try {
+            $course = $PAGE->course;
+            if (empty($course) || empty($course->id) || $course->id == SITEID) {
+                return;
+            }
+        } catch (\Throwable $e) {
             return;
         }
 
@@ -77,44 +85,18 @@ class before_footer {
             return;
         }
 
-        // Feature: RBAC check - exclude managers unless preview_for_admins is enabled.
-        $ismanager = has_capability('moodle/course:update', $PAGE->context) || has_capability('moodle/course:manageactivities', $PAGE->context);
+        $ismanager = has_capability('moodle/course:update', $PAGE->context) ||
+            has_capability('moodle/course:manageactivities', $PAGE->context);
         $previewenabled = (bool) get_config('local_smart_resume', 'preview_for_admins');
         if ($ismanager && !$previewenabled) {
             return;
         }
 
-        // Check if completion is enabled.
-        if (empty($CFG->enablecompletion)) {
-            return;
-        }
-
-        $course = $PAGE->course;
-        require_once($CFG->libdir . '/completionlib.php');
-        $completion = new \completion_info($course);
-
-        if (!$completion->is_enabled()) {
-            return;
-        }
-
-        $modinfo = get_fast_modinfo($course);
-        $cms = $modinfo->get_cms();
-
-        $firstincompletecmid = null;
-
-        foreach ($cms as $cm) {
-            // Check visibility on course page, stealth status, user visibility, and completion tracking.
-            if (!$cm->uservisible || !$cm->is_visible_on_course_page() || $cm->is_stealth() || !$completion->is_enabled($cm)) {
-                continue;
-            }
-
-            $completiondata = $completion->get_data($cm, true, $USER->id);
-
-            if ($completiondata->completionstate == COMPLETION_INCOMPLETE) {
-                $firstincompletecmid = $cm->id;
-                break;
-            }
-        }
+        // Resolve first incomplete module via decoupled service.
+        $firstincompletecmid = \local_smart_resume\service\resume_finder::get_first_incomplete_cmid(
+            $course,
+            (int) $USER->id
+        );
 
         if ($firstincompletecmid === null) {
             return;

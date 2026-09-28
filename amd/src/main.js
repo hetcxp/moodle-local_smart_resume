@@ -35,6 +35,7 @@ export const init = (strings, targetCmid) => {
     }
 
     const selectors = [
+        `[data-for="cmitem"][data-id="${targetCmid}"]`,
         `#module-${targetCmid}`,
         `[data-id="${targetCmid}"]`,
         `[data-cmid="${targetCmid}"]`,
@@ -69,10 +70,15 @@ export const init = (strings, targetCmid) => {
         parentSection.querySelector('.collapsed, [aria-expanded="false"]') !== null
     );
 
+    // Check accessibility prefers-reduced-motion setting.
+    const prefersReducedMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+
     if (isCollapsed) {
         parentSection.classList.add('local-smart-resume-section-highlight');
-        parentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        parentSection.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
     } else {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetElement.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
     }
 };
