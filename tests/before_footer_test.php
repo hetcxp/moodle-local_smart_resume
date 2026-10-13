@@ -32,8 +32,8 @@ namespace local_smart_resume;
  * @category   test
  * @copyright  2025 Héctor Eduardo Terán Canelones
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \local_smart_resume\hook\before_footer
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\local_smart_resume\hook\before_footer::class)]
 final class before_footer_test extends \advanced_testcase {
     public function test_execute_does_not_inject_on_frontpage(): void {
         global $PAGE;
@@ -42,17 +42,12 @@ final class before_footer_test extends \advanced_testcase {
         $this->setAdminUser();
 
         $PAGE->set_course(get_site());
-        $renderer = $PAGE->get_renderer('core');
-        $hook = new \core\hook\output\before_footer_html_generation($renderer);
-
-        \local_smart_resume\hook\before_footer::execute($hook);
-
-        $html = $PAGE->requires->get_end_code();
+        $html = $this->execute_hook_and_get_html();
         $this->assertStringNotContainsString('local_smart_resume/main', $html);
     }
 
     public function test_execute_does_not_inject_when_disabled(): void {
-        global $PAGE, $CFG;
+        global $CFG;
 
         $this->resetAfterTest();
         $CFG->enablecompletion = 1;
@@ -61,26 +56,14 @@ final class before_footer_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
         $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
 
-        $student = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
-        $this->setUser($student);
-
-        $PAGE->set_course($course);
-        $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
-        $PAGE->set_pagetype('course-view-' . $course->format);
-        $PAGE->set_context(\context_course::instance($course->id));
-
-        $renderer = $PAGE->get_renderer('core');
-        $hook = new \core\hook\output\before_footer_html_generation($renderer);
-
-        \local_smart_resume\hook\before_footer::execute($hook);
-
-        $html = $PAGE->requires->get_end_code();
+        $this->enrol_and_login($course, 'student');
+        $this->set_course_page($course);
+        $html = $this->execute_hook_and_get_html();
         $this->assertStringNotContainsString('local_smart_resume/main', $html);
     }
 
     public function test_execute_injects_for_enrolled_student_with_incomplete_activity(): void {
-        global $PAGE, $CFG;
+        global $CFG;
 
         $this->resetAfterTest();
         $CFG->enablecompletion = 1;
@@ -90,27 +73,15 @@ final class before_footer_test extends \advanced_testcase {
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
         $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
 
-        $student = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
-        $this->setUser($student);
-
-        $PAGE->set_course($course);
-        $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
-        $PAGE->set_pagetype('course-view-' . $course->format);
-        $PAGE->set_context(\context_course::instance($course->id));
-
-        $renderer = $PAGE->get_renderer('core');
-        $hook = new \core\hook\output\before_footer_html_generation($renderer);
-
-        \local_smart_resume\hook\before_footer::execute($hook);
-
-        $html = $PAGE->requires->get_end_code();
+        $this->enrol_and_login($course, 'student');
+        $this->set_course_page($course);
+        $html = $this->execute_hook_and_get_html();
         $this->assertStringContainsString('local_smart_resume/main', $html);
         $this->assertStringContainsString((string)$page1->cmid, $html);
     }
 
     public function test_execute_does_not_inject_when_all_activities_completed(): void {
-        global $PAGE, $CFG;
+        global $CFG;
 
         $this->resetAfterTest();
         $CFG->enablecompletion = 1;
@@ -119,31 +90,20 @@ final class before_footer_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
 
-        $student = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
-        $this->setUser($student);
+        $student = $this->enrol_and_login($course, 'student');
 
         // Mark page1 as completed.
         $completion = new \completion_info($course);
         $cm1 = get_coursemodule_from_id('page', $page1->cmid);
         $completion->update_state($cm1, COMPLETION_COMPLETE, $student->id);
 
-        $PAGE->set_course($course);
-        $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
-        $PAGE->set_pagetype('course-view-' . $course->format);
-        $PAGE->set_context(\context_course::instance($course->id));
-
-        $renderer = $PAGE->get_renderer('core');
-        $hook = new \core\hook\output\before_footer_html_generation($renderer);
-
-        \local_smart_resume\hook\before_footer::execute($hook);
-
-        $html = $PAGE->requires->get_end_code();
+        $this->set_course_page($course);
+        $html = $this->execute_hook_and_get_html();
         $this->assertStringNotContainsString('local_smart_resume/main', $html);
     }
 
     public function test_execute_respects_preview_for_admins_disabled(): void {
-        global $PAGE, $CFG;
+        global $CFG;
 
         $this->resetAfterTest();
         $CFG->enablecompletion = 1;
@@ -153,26 +113,14 @@ final class before_footer_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
         $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
 
-        $teacher = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
-        $this->setUser($teacher);
-
-        $PAGE->set_course($course);
-        $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
-        $PAGE->set_pagetype('course-view-' . $course->format);
-        $PAGE->set_context(\context_course::instance($course->id));
-
-        $renderer = $PAGE->get_renderer('core');
-        $hook = new \core\hook\output\before_footer_html_generation($renderer);
-
-        \local_smart_resume\hook\before_footer::execute($hook);
-
-        $html = $PAGE->requires->get_end_code();
+        $this->enrol_and_login($course, 'editingteacher');
+        $this->set_course_page($course);
+        $html = $this->execute_hook_and_get_html();
         $this->assertStringNotContainsString('local_smart_resume/main', $html);
     }
 
     public function test_execute_allows_admin_preview_when_enabled(): void {
-        global $PAGE, $CFG;
+        global $CFG;
 
         $this->resetAfterTest();
         $CFG->enablecompletion = 1;
@@ -182,27 +130,15 @@ final class before_footer_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
 
-        $teacher = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
-        $this->setUser($teacher);
-
-        $PAGE->set_course($course);
-        $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
-        $PAGE->set_pagetype('course-view-' . $course->format);
-        $PAGE->set_context(\context_course::instance($course->id));
-
-        $renderer = $PAGE->get_renderer('core');
-        $hook = new \core\hook\output\before_footer_html_generation($renderer);
-
-        \local_smart_resume\hook\before_footer::execute($hook);
-
-        $html = $PAGE->requires->get_end_code();
+        $this->enrol_and_login($course, 'editingteacher');
+        $this->set_course_page($course);
+        $html = $this->execute_hook_and_get_html();
         $this->assertStringContainsString('local_smart_resume/main', $html);
         $this->assertStringContainsString((string)$page1->cmid, $html);
     }
 
     public function test_execute_ignores_stealth_activities(): void {
-        global $PAGE, $CFG;
+        global $CFG;
 
         require_once($CFG->dirroot . '/course/lib.php');
 
@@ -218,21 +154,9 @@ final class before_footer_test extends \advanced_testcase {
         // Make page1 stealth (visibleoncoursepage = 0).
         set_coursemodule_visible($page1->cmid, 1, 0);
 
-        $student = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
-        $this->setUser($student);
-
-        $PAGE->set_course($course);
-        $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
-        $PAGE->set_pagetype('course-view-' . $course->format);
-        $PAGE->set_context(\context_course::instance($course->id));
-
-        $renderer = $PAGE->get_renderer('core');
-        $hook = new \core\hook\output\before_footer_html_generation($renderer);
-
-        \local_smart_resume\hook\before_footer::execute($hook);
-
-        $html = $PAGE->requires->get_end_code();
+        $this->enrol_and_login($course, 'student');
+        $this->set_course_page($course);
+        $html = $this->execute_hook_and_get_html();
         $this->assertStringContainsString('local_smart_resume/main', $html);
         // It must target page2, not the stealth page1.
         $this->assertStringContainsString((string)$page2->cmid, $html);
@@ -248,21 +172,14 @@ final class before_footer_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
 
-        $student = $this->getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
-        $this->setUser($student);
+        $this->enrol_and_login($course, 'student');
 
         $PAGE->set_course($course);
         $PAGE->set_url(new \moodle_url('/mod/page/view.php', ['id' => $page1->cmid]));
         $PAGE->set_pagetype('mod-page-view');
         $PAGE->set_context(\context_module::instance($page1->cmid));
 
-        $renderer = $PAGE->get_renderer('core');
-        $hook = new \core\hook\output\before_footer_html_generation($renderer);
-
-        \local_smart_resume\hook\before_footer::execute($hook);
-
-        $html = $PAGE->requires->get_end_code();
+        $html = $this->execute_hook_and_get_html();
         $this->assertStringNotContainsString('local_smart_resume/main', $html);
     }
 
@@ -287,12 +204,77 @@ final class before_footer_test extends \advanced_testcase {
             $property->setValue($PAGE, null);
         }
 
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    /**
+     * Test that execute handles service exceptions gracefully without throwing or injecting.
+     */
+    public function test_execute_handles_service_exception_gracefully(): void {
+        global $PAGE, $CFG;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $this->enrol_and_login($course, 'student');
+        $this->set_course_page($course);
+
+        // Provoke an invalid state for completion to simulate service failure.
+        $corruptedcourse = clone $course;
+        $corruptedcourse->id = 999999;
+        $PAGE->set_course($corruptedcourse);
+
+        // Execute must not throw exception and must log debugging.
+        $html = $this->execute_hook_and_get_html();
+        $this->assertDebuggingCalled();
+        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    /**
+     * Point $PAGE at the course view page of the given course.
+     *
+     * @param \stdClass $course
+     */
+    private function set_course_page(\stdClass $course): void {
+        global $PAGE;
+
+        $PAGE->set_course($course);
+        $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
+        $PAGE->set_pagetype('course-view-' . $course->format);
+        $PAGE->set_context(\context_course::instance($course->id));
+    }
+
+    /**
+     * Create a user, enrol it in the course with the given role and log it in.
+     *
+     * @param \stdClass $course
+     * @param string $role Role shortname.
+     * @return \stdClass The enrolled user.
+     */
+    private function enrol_and_login(\stdClass $course, string $role): \stdClass {
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, $role);
+        $this->setUser($user);
+
+        return $user;
+    }
+
+    /**
+     * Execute the before_footer callback and return the end-of-body HTML of $PAGE.
+     *
+     * @return string
+     */
+    private function execute_hook_and_get_html(): string {
+        global $PAGE;
+
         $renderer = $PAGE->get_renderer('core');
         $hook = new \core\hook\output\before_footer_html_generation($renderer);
 
         \local_smart_resume\hook\before_footer::execute($hook);
 
-        $html = $PAGE->requires->get_end_code();
-        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+        return $PAGE->requires->get_end_code();
     }
 }

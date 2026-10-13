@@ -1,6 +1,6 @@
 # Moodle Plugins Directory & Marketplace Listing Kit
 **Plugin:** Smart Resume (`local_smart_resume`)  
-**Version:** 1.4.1 | **Maturity:** Stable | **Target:** Moodle 4.5 LTS+ (`2024100700`+)  
+**Version:** 1.5.0 | **Maturity:** Stable | **Target:** Moodle 4.5 LTS to 5.3 (`2024100700`+)  
 **License:** GNU General Public License v3.0 (GPLv3)  
 **Author:** Héctor Eduardo Terán Canelones  
 **Guidelines Reference:** [Moodle Marketplace Submission Standards](https://moodle.atlassian.net/wiki/external/OTE4YmM3MDlmM2ZjNDczMGFlNzRlZGM0YTlmNGVlNDU)  
@@ -130,9 +130,9 @@ Automatically guides students to their next incomplete activity with smooth scro
 
 <h3>⚙️ Prerequisites &amp; Compatibility</h3>
 <ul>
-    <li><strong>Moodle Version:</strong> 4.5 LTS or higher (Build <code>2024100700</code>+ with modern Core Hooks support).</li>
+    <li><strong>Moodle Version:</strong> 4.5 LTS to 5.3 (Build <code>2024100700</code>+ with modern Core Hooks support).</li>
     <li><strong>Completion Tracking:</strong> Enabled (<code>enablecompletion = 1</code>).</li>
-    <li><strong>PHP:</strong> Compatible with PHP 8.1, 8.2, and 8.3.</li>
+    <li><strong>PHP:</strong> Any version supported by your Moodle release (8.1&ndash;8.3 on 4.5 LTS, 8.2+ on 5.x).</li>
     <li><strong>Database:</strong> Fully independent (MySQL, MariaDB, PostgreSQL, Oracle, MSSQL).</li>
 </ul>
 
@@ -201,7 +201,7 @@ Guía automáticamente al estudiante a su siguiente actividad pendiente mediante
 <ul>
     <li><strong>🎯 Detección Inteligente en Tiempo Real:</strong> Evalúa los criterios de finalización de actividades mediante la Completion API oficial de Moodle.</li>
     <li><strong>📜 Desplazamiento Suave (Auto-Scroll):</strong> Sitúa automáticamente el viewport sobre la actividad objetivo sin saltos bruscos.</li>
-    <li><strong>💡 Resaltado Visual y Badge Dinámico:</strong> Aplica un contenedor con borde azul Moodle (<code>#0f6cbf</code>), sombra suave y una insignia destacada.</li>
+    <li><strong>💡 Resaltado Visual y Badge Dinámico:</strong> Aplica un contenedor con el color primario de tu tema Moodle (fallback <code>#0f6cbf</code>), sombra suave y una insignia destacada.</li>
     <li><strong>📂 Compatibilidad con Secciones Colapsadas:</strong> Si la tarea pendiente está dentro de un acordeón cerrado, resalta la cabecera de la sección orientando al alumno sin alterar la estructura del tema.</li>
     <li><strong>👁️ Modo Previsualización para Docentes:</strong> Ajuste opcional en administración para que profesores y diseñadores puedan verificar el comportamiento del indicador.</li>
     <li><strong>🛡️ Respeto Estricto de Permisos y Restricciones:</strong> Ignora módulos ocultos, en modo stealth o condicionados por restricciones de acceso no cumplidas.</li>

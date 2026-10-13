@@ -92,33 +92,26 @@ class before_footer {
             return;
         }
 
-        // Resolve first incomplete module via decoupled service.
-        $firstincompletecmid = \local_smart_resume\service\resume_finder::get_first_incomplete_cmid(
-            $course,
-            (int) $USER->id
-        );
+        // Resolve first incomplete module via decoupled service with error isolation.
+        try {
+            $firstincompletecmid = \local_smart_resume\service\resume_finder::get_first_incomplete_cmid(
+                $course,
+                (int) $USER->id
+            );
+        } catch (\Throwable $e) {
+            debugging('local_smart_resume service error: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            return;
+        }
 
         if ($firstincompletecmid === null) {
             return;
         }
 
-        // Prepare strings for JS.
+        // Prepare localized string for client-side DOM rendering.
         $nextactivitystring = get_string('nextactivity', 'local_smart_resume');
 
-        // Output API (Renderable & Templatable).
-        $renderable = new \local_smart_resume\output\resume_label($nextactivitystring, $firstincompletecmid);
-        $renderer = $PAGE->get_renderer('local_smart_resume');
-
-        try {
-            $labelhtml = $renderer->render($renderable);
-        } catch (\Exception $e) {
-            debugging($e->getMessage(), DEBUG_DEVELOPER);
-            return;
-        }
-
-        // ESM (JavaScript Modules).
         $strings = [
-            'nextactivity' => $labelhtml,
+            'nextactivity' => $nextactivitystring,
         ];
 
         $PAGE->requires->js_call_amd('local_smart_resume/main', 'init', [$strings, $firstincompletecmid]);

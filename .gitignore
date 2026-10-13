@@ -33,3 +33,4 @@ vendor/
 *.log
 error_log
 .phpunit.result.cache
+phpunit.xml

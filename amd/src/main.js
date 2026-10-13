@@ -21,6 +21,9 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/** @type {Function|null} Disposes the observer of a previous init() call, if still active. */
+let disposeActiveObserver = null;
+
 /**
  * Initialize the module.
  *
@@ -34,51 +37,141 @@ export const init = (strings, targetCmid) => {
         return;
     }
 
+    if (disposeActiveObserver) {
+        disposeActiveObserver();
+    }
+
     const selectors = [
         `[data-for="cmitem"][data-id="${targetCmid}"]`,
         `#module-${targetCmid}`,
-        `[data-id="${targetCmid}"]`,
+        `.activity[data-id="${targetCmid}"]`,
         `[data-cmid="${targetCmid}"]`,
-        `.activity[id*="section-"][id*="-item-${targetCmid}"]`
+        `.activity[id*="section-"][id$="-item-${targetCmid}"]`
     ];
 
-    let targetElement = null;
-    for (const selector of selectors) {
-        targetElement = document.querySelector(selector);
-        if (targetElement) {
-            break;
+    const findTarget = () => {
+        for (const selector of selectors) {
+            const el = document.querySelector(selector);
+            if (el) {
+                return el;
+            }
         }
-    }
+        return null;
+    };
 
-    if (!targetElement) {
+    const applyHighlight = (targetElement) => {
+        const courseContainer = document.querySelector('#course-content, #region-main') || document;
+
+        // Limpiar resaltados previos en el contenedor y badges específicos de esta actividad.
+        courseContainer.querySelectorAll('.local-smart-resume-highlight').forEach(el => {
+            el.classList.remove('local-smart-resume-highlight');
+            el.removeAttribute('aria-current');
+        });
+        courseContainer.querySelectorAll('.local-smart-resume-section-highlight').forEach(el => {
+            el.classList.remove('local-smart-resume-section-highlight');
+        });
+        courseContainer.querySelectorAll('.local-smart-resume-label').forEach(el => {
+            el.remove();
+        });
+
+        // Resaltar actividad con semántica ARIA estandarizada.
+        targetElement.classList.add('local-smart-resume-highlight');
+        targetElement.setAttribute('aria-current', 'step');
+
+        // Inserción accesible de badge sin inyección HTML insegura.
+        if (label) {
+            const badge = document.createElement('div');
+            badge.className = 'local-smart-resume-label';
+            badge.setAttribute('role', 'status');
+            badge.setAttribute('aria-label', label);
+            badge.setAttribute('data-cmid', String(targetCmid));
+            badge.textContent = label;
+            targetElement.appendChild(badge);
+        }
+
+        // Detección selectiva de sección colapsada (evita falsos positivos en botones internos).
+        const parentSection = targetElement.closest('.course-section, [data-for="section"], .section');
+        let isCollapsed = false;
+
+        if (parentSection) {
+            const sectionCollapseBtn = parentSection.querySelector(
+                '[data-toggle="collapse"], [data-bs-toggle="collapse"], .section-collapse-button, [data-action="collapsesection"]'
+            );
+            const contentElement = parentSection.querySelector('.course-section-header ~ .content, .section-summary-activities');
+
+            // Un destino sin cajas de layout (display:none por colapso en cualquier formato) no es visible.
+            isCollapsed = parentSection.classList.contains('collapsed') ||
+                parentSection.getAttribute('data-is-expanded') === '0' ||
+                (sectionCollapseBtn && sectionCollapseBtn.getAttribute('aria-expanded') === 'false') ||
+                (contentElement && window.getComputedStyle(contentElement).display === 'none') ||
+                targetElement.getClientRects().length === 0;
+        }
+
+        // Accesibilidad: respetar preferencia de movimiento reducido.
+        const prefersReducedMotion = window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+        if (isCollapsed) {
+            parentSection.classList.add('local-smart-resume-section-highlight');
+            parentSection.scrollIntoView({behavior: scrollBehavior, block: 'center'});
+        } else {
+            targetElement.scrollIntoView({behavior: scrollBehavior, block: 'center'});
+        }
+    };
+
+    const initialTarget = findTarget();
+    if (initialTarget) {
+        applyHighlight(initialTarget);
         return;
     }
 
-    // Mark activity and insert badge.
-    targetElement.classList.add('local-smart-resume-highlight');
+    // Soporte para renderizado diferido y reactivo de formatos de curso (Moodle 4.5+ y 5.x).
+    if (typeof MutationObserver !== 'undefined') {
+        const rootContainer = document.querySelector('#course-content, #region-main') || document.body;
+        let observer = null;
+        let timeoutId = null;
+        let frameId = null;
 
-    const existingLabels = targetElement.querySelectorAll('.local-smart-resume-label');
-    existingLabels.forEach(el => el.remove());
+        const cleanupObserver = () => {
+            if (observer) {
+                observer.disconnect();
+                observer = null;
+            }
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            if (frameId !== null) {
+                window.cancelAnimationFrame(frameId);
+                frameId = null;
+            }
+            if (disposeActiveObserver === cleanupObserver) {
+                disposeActiveObserver = null;
+            }
+        };
+        disposeActiveObserver = cleanupObserver;
 
-    targetElement.insertAdjacentHTML('beforeend', label);
+        observer = new MutationObserver(() => {
+            if (frameId !== null) {
+                return;
+            }
+            frameId = window.requestAnimationFrame(() => {
+                frameId = null;
+                const deferredTarget = findTarget();
+                if (deferredTarget) {
+                    cleanupObserver();
+                    applyHighlight(deferredTarget);
+                }
+            });
+        });
 
-    // Detect collapsed section.
-    const parentSection = targetElement.closest('.course-section, [data-for="section"], .section');
-    const isCollapsed = parentSection && (
-        parentSection.classList.contains('collapsed') ||
-        parentSection.getAttribute('aria-expanded') === 'false' ||
-        parentSection.querySelector('.collapsed, [aria-expanded="false"]') !== null
-    );
+        observer.observe(rootContainer, {
+            childList: true,
+            subtree: true
+        });
 
-    // Check accessibility prefers-reduced-motion setting.
-    const prefersReducedMotion = window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
-
-    if (isCollapsed) {
-        parentSection.classList.add('local-smart-resume-section-highlight');
-        parentSection.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
-    } else {
-        targetElement.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
+        // Limitar la ventana de observación a 3 segundos para evitar memory leaks.
+        timeoutId = setTimeout(cleanupObserver, 3000);
     }
 };

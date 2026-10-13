@@ -8,7 +8,7 @@ Plugin local para Moodle diseñado para optimizar la experiencia de aprendizaje 
 
 - **🎯 Detección Inteligente en Tiempo Real**: Evalúa los criterios de finalización de actividades mediante la Completion API oficial de Moodle (`completion_info`).
 - **📜 Desplazamiento Adaptable (A11y)**: Sitúa automáticamente el viewport sobre la actividad objetivo respetando la preferencia del sistema operativo `prefers-reduced-motion` (conmutando de forma transparente entre scroll suave o instantáneo).
-- **💡 Indicador Visual Distintivo**: Aplica un contenedor de realce con borde distintivo Moodle (`#0f6cbf`), sombra suave y una insignia responsive ("Siguiente actividad") con reglas de contención de texto para evitar desbordamientos en pantallas móviles estrechas.
+- **💡 Indicador Visual Distintivo**: Aplica un contenedor de realce con el color primario del tema activo (fallback Moodle `#0f6cbf`), sombra suave y una insignia responsive ("Siguiente actividad") con reglas de contención de texto para evitar desbordamientos en pantallas móviles estrechas. La insignia se construye en cliente con `textContent` (sin inyección de HTML).
 - **📂 Compatibilidad con Secciones Colapsadas**: Si la tarea pendiente se encuentra dentro de un acordeón o sección cerrada, resalta la cabecera/tarjeta de la sección (`.local-smart-resume-section-highlight`) orientando al alumno sin alterar la estructura del tema.
 - **👁️ Modo Previsualización para Docentes y Administradores**: Opción en configuración para que usuarios con permisos de gestión (`moodle/course:update` o `moodle/course:manageactivities`) verifiquen visualmente el indicador durante el diseño del curso.
 - **🛡️ Filtro Estricto de Visibilidad y Permisos**: Respeta actividades ocultas, módulos en modo stealth y restricciones de acceso no cumplidas.
@@ -22,8 +22,8 @@ Plugin local para Moodle diseñado para optimizar la experiencia de aprendizaje 
 
 ## 📋 Requisitos
 
-- **Moodle**: 4.5 LTS o superior (`requires = 2024100700`).
-- **PHP**: 8.3 o superior.
+- **Moodle**: 4.5 LTS a 5.3 (`requires = 2024100700`, `supported = [405, 503]`).
+- **PHP**: Cualquier versión soportada por tu release de Moodle (8.1–8.3 en 4.5 LTS; 8.2 o superior en 5.x).
 - **Rastreo de finalización**: Habilitado a nivel de plataforma (`$CFG->enablecompletion`), en la configuración del curso y en las actividades correspondientes.
 
 ---
@@ -65,11 +65,11 @@ El plugin cuenta con una suite completa de verificación siguiendo los estándar
   Cumple 100% las directrices oficiales de Moodle HQ (0 errores, 0 advertencias).
 
 - **Pruebas Unitarias (PHPUnit)**:
-  Suite dedicada `local_smart_resume_testsuite` con 9 escenarios:
+  Suite dedicada `local_smart_resume_testsuite` con 10 escenarios:
   ```bash
   vendor/bin/phpunit --testsuite local_smart_resume_testsuite
   ```
-  Cobertura de casos: portada, plugin inactivo, estudiante con actividad incompleta, curso completado, permisos docentes/admin, actividades stealth, páginas externas y páginas sin contexto de curso inicializado.
+  Cobertura de casos: portada, plugin inactivo, estudiante con actividad incompleta, curso completado, permisos docentes/admin, actividades stealth, páginas externas, páginas sin contexto de curso inicializado y aislamiento de errores del servicio `resume_finder`.
 
 - **Pruebas de Aceptación (Behat)**:
   Escenarios BDD en `tests/behat/resume_label.feature` para validación interactiva de la etiqueta y desplazamiento tras completar actividades.

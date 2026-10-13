@@ -21,12 +21,18 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/*
+ * Los !important son intencionales: el resaltado debe prevalecer sobre los bordes, posición y
+ * sombras de las tarjetas de actividad de Boost y de los formatos de curso (mayor especificidad).
+ */
+/* stylelint-disable declaration-no-important */
+
 /* Estilo para el contenedor de la actividad resaltada */
 .local-smart-resume-highlight {
-    border: 2px solid #0f6cbf !important; /* Azul estándar de Moodle */
+    border: 2px solid var(--primary, var(--bs-primary, #0f6cbf)) !important;
     border-radius: 0.75rem !important;
     position: relative !important;
-    box-shadow: 0 0 15px rgba(15, 108, 191, 0.4);
+    box-shadow: 0 0 15px rgba(var(--bs-primary-rgb, 15, 108, 191), 0.4);
     transition: box-shadow 0.5s ease-in-out;
     z-index: 1;
 }
@@ -36,8 +42,8 @@
     position: absolute;
     top: -12px;
     right: 20px;
-    background-color: #0f6cbf;
-    color: #ffffff;
+    background-color: var(--primary, var(--bs-primary, #0f6cbf));
+    color: var(--bs-white, #fff);
     padding: 0.3rem 1rem;
     border-radius: 2rem;
     font-size: 0.8rem;
@@ -52,20 +58,17 @@
     overflow: hidden;
 }
 
-/* Evitar que se aplique doble si hay nesting accidental */
-.local-smart-resume-label .local-smart-resume-label {
-    position: static !important;
-    background: none !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    font-size: inherit !important;
-    margin: 0 !important;
-}
-
 /* Estilo para la sección colapsada que contiene la siguiente actividad */
 .local-smart-resume-section-highlight {
-    border-left: 4px solid #0f6cbf !important;
-    box-shadow: 0 0 12px rgba(15, 108, 191, 0.25) !important;
+    border-left: 4px solid var(--primary, var(--bs-primary, #0f6cbf)) !important;
+    box-shadow: 0 0 12px rgba(var(--bs-primary-rgb, 15, 108, 191), 0.25) !important;
     transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+/* Accesibilidad: respetar la preferencia de movimiento reducido. */
+@media (prefers-reduced-motion: reduce) {
+    .local-smart-resume-highlight,
+    .local-smart-resume-section-highlight {
+        transition: none;
+    }
 }

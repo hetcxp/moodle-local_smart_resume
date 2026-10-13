@@ -25,7 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_smart_resume';
-$plugin->version   = 2026090400;
+$plugin->version   = 2026101300;
 $plugin->requires  = 2024100700; // Moodle 4.5.
+$plugin->supported = [405, 503]; // Moodle 4.5 to Moodle 5.3.
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.4.1';
+$plugin->release   = '1.5.0';
