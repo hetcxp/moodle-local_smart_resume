@@ -31,22 +31,29 @@ let disposeActiveObserver = null;
  * @param {Number|String} targetCmid Target CMID
  */
 export const init = (strings, targetCmid) => {
-    const label = strings?.nextactivity ?? '';
-
-    if (!targetCmid) {
+    const rawCmid = targetCmid !== null && targetCmid !== undefined ? String(targetCmid).trim() : '';
+    if (!rawCmid || !/^\d+$/.test(rawCmid)) {
+        return;
+    }
+    const cmid = Number(rawCmid);
+    if (!Number.isSafeInteger(cmid) || cmid <= 0) {
         return;
     }
 
+    const rawLabel = typeof strings?.nextactivity === 'string' ? strings.nextactivity : '';
+    const label = rawLabel.trim();
+
     if (disposeActiveObserver) {
         disposeActiveObserver();
+        disposeActiveObserver = null;
     }
 
     const selectors = [
-        `[data-for="cmitem"][data-id="${targetCmid}"]`,
-        `#module-${targetCmid}`,
-        `.activity[data-id="${targetCmid}"]`,
-        `[data-cmid="${targetCmid}"]`,
-        `.activity[id*="section-"][id$="-item-${targetCmid}"]`
+        `[data-for="cmitem"][data-id="${cmid}"]`,
+        `#module-${cmid}`,
+        `.activity[data-id="${cmid}"]`,
+        `[data-cmid="${cmid}"]`,
+        `.activity[id*="section-"][id$="-item-${cmid}"]`
     ];
 
     const findTarget = () => {
@@ -62,10 +69,12 @@ export const init = (strings, targetCmid) => {
     const applyHighlight = (targetElement) => {
         const courseContainer = document.querySelector('#course-content, #region-main') || document;
 
-        // Limpiar resaltados previos en el contenedor y badges específicos de esta actividad.
+        // Limpiar resaltados previos en el contenedor y cualquier badge previo.
         courseContainer.querySelectorAll('.local-smart-resume-highlight').forEach(el => {
             el.classList.remove('local-smart-resume-highlight');
-            el.removeAttribute('aria-current');
+            if (el.getAttribute('aria-current') === 'step') {
+                el.removeAttribute('aria-current');
+            }
         });
         courseContainer.querySelectorAll('.local-smart-resume-section-highlight').forEach(el => {
             el.classList.remove('local-smart-resume-section-highlight');
@@ -74,7 +83,7 @@ export const init = (strings, targetCmid) => {
             el.remove();
         });
 
-        // Resaltar actividad con semántica ARIA estandarizada.
+        // Resaltar actividad con semántica ARIA estandarizada para pasos en progreso.
         targetElement.classList.add('local-smart-resume-highlight');
         targetElement.setAttribute('aria-current', 'step');
 
@@ -84,7 +93,7 @@ export const init = (strings, targetCmid) => {
             badge.className = 'local-smart-resume-label';
             badge.setAttribute('role', 'status');
             badge.setAttribute('aria-label', label);
-            badge.setAttribute('data-cmid', String(targetCmid));
+            badge.setAttribute('data-cmid', String(cmid));
             badge.textContent = label;
             targetElement.appendChild(badge);
         }
@@ -99,12 +108,11 @@ export const init = (strings, targetCmid) => {
             );
             const contentElement = parentSection.querySelector('.course-section-header ~ .content, .section-summary-activities');
 
-            // Un destino sin cajas de layout (display:none por colapso en cualquier formato) no es visible.
             isCollapsed = parentSection.classList.contains('collapsed') ||
                 parentSection.getAttribute('data-is-expanded') === '0' ||
                 (sectionCollapseBtn && sectionCollapseBtn.getAttribute('aria-expanded') === 'false') ||
                 (contentElement && window.getComputedStyle(contentElement).display === 'none') ||
-                targetElement.getClientRects().length === 0;
+                (!targetElement.isConnected || targetElement.getClientRects().length === 0);
         }
 
         // Accesibilidad: respetar preferencia de movimiento reducido.
@@ -152,7 +160,10 @@ export const init = (strings, targetCmid) => {
         };
         disposeActiveObserver = cleanupObserver;
 
-        observer = new MutationObserver(() => {
+        observer = new MutationObserver((mutations) => {
+            if (!mutations.some(m => m.addedNodes.length > 0 || m.type === 'attributes')) {
+                return;
+            }
             if (frameId !== null) {
                 return;
             }
@@ -168,7 +179,9 @@ export const init = (strings, targetCmid) => {
 
         observer.observe(rootContainer, {
             childList: true,
-            subtree: true
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class', 'aria-expanded', 'data-is-expanded', 'hidden', 'aria-hidden', 'style']
         });
 
         // Limitar la ventana de observación a 3 segundos para evitar memory leaks.

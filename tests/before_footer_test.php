@@ -35,6 +35,11 @@ namespace local_smart_resume;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_smart_resume\hook\before_footer::class)]
 final class before_footer_test extends \advanced_testcase {
+    protected function tearDown(): void {
+        \local_smart_resume\service\resume_finder::clear_cache();
+        parent::tearDown();
+    }
+
     public function test_execute_does_not_inject_on_frontpage(): void {
         global $PAGE;
 
@@ -231,6 +236,33 @@ final class before_footer_test extends \advanced_testcase {
         $html = $this->execute_hook_and_get_html();
         $this->assertDebuggingCalled();
         $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    public function test_execute_evaluates_manager_capabilities_in_course_context(): void {
+        global $CFG, $PAGE;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+        set_config('preview_for_admins', 0, 'local_smart_resume');
+
+        $course1 = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $course2 = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course1->id, 'completion' => 1]);
+
+        // User is editingteacher in course2, but student in course1.
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course2->id, 'editingteacher');
+        $this->getDataGenerator()->enrol_user($user->id, $course1->id, 'student');
+        $this->setUser($user);
+
+        $this->set_course_page($course1);
+        // Explicitly set PAGE context to course2 to verify isolation.
+        $PAGE->set_context(\context_course::instance($course2->id));
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringContainsString('local_smart_resume/main', $html);
+        $this->assertStringContainsString((string)$page1->cmid, $html);
     }
 
     /**

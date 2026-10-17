@@ -69,6 +69,7 @@
 @media (prefers-reduced-motion: reduce) {
     .local-smart-resume-highlight,
     .local-smart-resume-section-highlight {
+        animation: none;
         transition: none;
     }
 }
