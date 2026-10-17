@@ -34,3 +34,6 @@ vendor/
 error_log
 .phpunit.result.cache
 phpunit.xml
+
+# --- Release Packages ---
+*.zip
