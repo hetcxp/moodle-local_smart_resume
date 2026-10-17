@@ -28,9 +28,7 @@ jobs:
 
       - name: Install Moodle CodeChecker
         run: |
-          git clone --depth 1 https://github.com/moodlehq/moodle-cs.git /tmp/moodle-cs
-          composer --working-dir=/tmp/moodle-cs install --no-dev --no-interaction --prefer-dist
-          /tmp/moodle-cs/vendor/bin/phpcs --config-set installed_paths /tmp/moodle-cs
+          composer create-project --no-dev --no-interaction --prefer-dist moodlehq/moodle-cs /tmp/moodle-cs
 
       - name: Run CodeChecker (moodle standard)
         run: |
