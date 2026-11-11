@@ -98,21 +98,38 @@ export const init = (strings, targetCmid) => {
             targetElement.appendChild(badge);
         }
 
-        // Detección selectiva de sección colapsada (evita falsos positivos en botones internos).
-        const parentSection = targetElement.closest('.course-section, [data-for="section"], .section');
-        let isCollapsed = false;
-
-        if (parentSection) {
-            const sectionCollapseBtn = parentSection.querySelector(
-                '[data-toggle="collapse"], [data-bs-toggle="collapse"], .section-collapse-button, [data-action="collapsesection"]'
+        // Detección selectiva de sección colapsada (soporta subsecciones delegadas en Moodle 4.5-5.3).
+        const isSectionElementCollapsed = (sectionEl) => {
+            const headerEl = sectionEl.querySelector('.course-section-header') || sectionEl;
+            const sectionCollapseBtn = headerEl.querySelector(
+                '[data-for="sectiontoggler"], [data-toggle="collapse"], [data-bs-toggle="collapse"], ' +
+                '.section-collapse-button, [data-action="collapsesection"]'
             );
-            const contentElement = parentSection.querySelector('.course-section-header ~ .content, .section-summary-activities');
+            const contentElement = sectionEl.querySelector(
+                '.course-section-header ~ .content, .section-summary-activities'
+            );
 
-            isCollapsed = parentSection.classList.contains('collapsed') ||
-                parentSection.getAttribute('data-is-expanded') === '0' ||
-                (sectionCollapseBtn && sectionCollapseBtn.getAttribute('aria-expanded') === 'false') ||
-                (contentElement && window.getComputedStyle(contentElement).display === 'none') ||
-                (!targetElement.isConnected || targetElement.getClientRects().length === 0);
+            return sectionEl.classList.contains('collapsed') ||
+                sectionEl.getAttribute('data-is-expanded') === '0' ||
+                Boolean(sectionCollapseBtn && sectionCollapseBtn.getAttribute('aria-expanded') === 'false') ||
+                Boolean(contentElement && window.getComputedStyle(contentElement).display === 'none');
+        };
+
+        let currentSection = targetElement.closest('.course-section, [data-for="section"], .section');
+        const immediateSection = currentSection;
+        let collapsedSection = null;
+
+        while (currentSection) {
+            if (isSectionElementCollapsed(currentSection)) {
+                collapsedSection = currentSection;
+            }
+            const parentEl = currentSection.parentElement;
+            currentSection = parentEl ? parentEl.closest('.course-section, [data-for="section"], .section') : null;
+        }
+
+        if (!collapsedSection && immediateSection &&
+                (!targetElement.isConnected || targetElement.getClientRects().length === 0)) {
+            collapsedSection = immediateSection;
         }
 
         // Accesibilidad: respetar preferencia de movimiento reducido.
@@ -120,9 +137,9 @@ export const init = (strings, targetCmid) => {
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
 
-        if (isCollapsed) {
-            parentSection.classList.add('local-smart-resume-section-highlight');
-            parentSection.scrollIntoView({behavior: scrollBehavior, block: 'center'});
+        if (collapsedSection) {
+            collapsedSection.classList.add('local-smart-resume-section-highlight');
+            collapsedSection.scrollIntoView({behavior: scrollBehavior, block: 'center'});
         } else {
             targetElement.scrollIntoView({behavior: scrollBehavior, block: 'center'});
         }

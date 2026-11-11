@@ -97,7 +97,48 @@ final class resume_finder_test extends \advanced_testcase {
         $completion->update_state($cm1, COMPLETION_COMPLETE, $user->id);
 
         $cmid = resume_finder::get_first_incomplete_cmid($course, (int) $user->id);
-        $this->assertEquals((int) $page2->cmid, $cmid);
+        $this->assertIsInt($cmid);
+        $this->assertSame((int) $page2->cmid, $cmid);
+    }
+
+    public function test_resolves_incomplete_module_with_cold_completion_cache_and_db_record(): void {
+        global $CFG, $DB;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+        $this->setUser($user);
+
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
+
+        $record = (object) [
+            'coursemoduleid' => (int) $page->cmid,
+            'userid' => (int) $user->id,
+            'completionstate' => COMPLETION_INCOMPLETE,
+            'viewed' => 0,
+            'timemodified' => time(),
+        ];
+
+        $existing = $DB->get_record('course_modules_completion', [
+            'coursemoduleid' => $page->cmid,
+            'userid' => $user->id,
+        ]);
+        if ($existing) {
+            $record->id = $existing->id;
+            $DB->update_record('course_modules_completion', $record);
+        } else {
+            $DB->insert_record('course_modules_completion', $record);
+        }
+
+        \cache::make('core', 'completion')->purge();
+        resume_finder::clear_cache();
+
+        $cmid = resume_finder::get_first_incomplete_cmid($course, (int) $user->id);
+        $this->assertIsInt($cmid);
+        $this->assertSame((int) $page->cmid, $cmid);
     }
 
     public function test_request_cache_memoization_and_clear(): void {
@@ -116,7 +157,8 @@ final class resume_finder_test extends \advanced_testcase {
 
         // First call populates cache with page1->cmid.
         $initialcmid = resume_finder::get_first_incomplete_cmid($course, (int) $user->id);
-        $this->assertEquals((int) $page1->cmid, $initialcmid);
+        $this->assertIsInt($initialcmid);
+        $this->assertSame((int) $page1->cmid, $initialcmid);
 
         // Mark page1 as complete.
         $completion = new \completion_info($course);
@@ -124,7 +166,8 @@ final class resume_finder_test extends \advanced_testcase {
 
         // Without clear_cache(), cached result remains page1->cmid.
         $cachedcmid = resume_finder::get_first_incomplete_cmid($course, (int) $user->id);
-        $this->assertEquals((int) $page1->cmid, $cachedcmid);
+        $this->assertIsInt($cachedcmid);
+        $this->assertSame((int) $page1->cmid, $cachedcmid);
 
         // Clear cache, next call must re-query and return null.
         resume_finder::clear_cache();
@@ -150,7 +193,9 @@ final class resume_finder_test extends \advanced_testcase {
         resume_finder::clear_cache();
         $staticresult = resume_finder::get_first_incomplete_cmid($course, (int) $user->id);
 
-        $this->assertEquals($instanceresult, $staticresult);
-        $this->assertEquals((int) $page->cmid, $instanceresult);
+        $this->assertIsInt($instanceresult);
+        $this->assertIsInt($staticresult);
+        $this->assertSame($instanceresult, $staticresult);
+        $this->assertSame((int) $page->cmid, $instanceresult);
     }
 }

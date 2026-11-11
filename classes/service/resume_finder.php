@@ -74,7 +74,7 @@ class resume_finder implements resume_finder_interface {
         foreach ($cms as $cm) {
             if ($this->is_module_eligible($cm, $completion)) {
                 $completiondata = $completion->get_data($cm, true, $userid);
-                if ($completiondata->completionstate === COMPLETION_INCOMPLETE) {
+                if ((int) $completiondata->completionstate === COMPLETION_INCOMPLETE) {
                     return (int) $cm->id;
                 }
             }
