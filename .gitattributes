@@ -4,3 +4,6 @@
 /.gitattributes export-ignore
 /.llm_build export-ignore
 /phpunit.xml export-ignore
+/MARKETPLACE_LISTING.md export-ignore
+/pix/marketplace_icon_*.png export-ignore
+

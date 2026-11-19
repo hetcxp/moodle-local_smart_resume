@@ -35,6 +35,7 @@ namespace local_smart_resume;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\local_smart_resume\hook\before_footer::class)]
 final class before_footer_test extends \advanced_testcase {
+    #[\Override]
     protected function tearDown(): void {
         \local_smart_resume\service\resume_finder::clear_cache();
         parent::tearDown();
@@ -205,7 +206,6 @@ final class before_footer_test extends \advanced_testcase {
         $reflection = new \ReflectionClass($PAGE);
         if ($reflection->hasProperty('_course')) {
             $property = $reflection->getProperty('_course');
-            $property->setAccessible(true);
             $property->setValue($PAGE, null);
         }
 
@@ -265,6 +265,231 @@ final class before_footer_test extends \advanced_testcase {
         $this->assertStringContainsString((string)$page1->cmid, $html);
     }
 
+    public function test_execute_does_not_inject_for_unenrolled_authenticated_user(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
+
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        $this->set_course_page($course);
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    public function test_execute_does_not_inject_for_suspended_enrolled_user(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
+
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user(
+            $user->id,
+            $course->id,
+            'student',
+            'manual',
+            0,
+            0,
+            ENROL_USER_SUSPENDED
+        );
+        $this->setUser($user);
+        $this->set_course_page($course);
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    public function test_execute_does_not_inject_for_hidden_course_to_enrolled_student(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1, 'visible' => 0]);
+        $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
+
+        $this->enrol_and_login($course, 'student');
+        $this->set_course_page($course);
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    public function test_execute_allows_preview_for_unenrolled_admin_when_enabled(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+        set_config('preview_for_admins', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
+
+        $manager = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->role_assign('manager', $manager->id);
+        $this->setUser($manager);
+        $this->set_course_page($course);
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringContainsString('local_smart_resume/main', $html);
+        $this->assertStringContainsString((string)$page1->cmid, $html);
+    }
+
+    public function test_execute_does_not_inject_on_restricted_section_pagetype(): void {
+        global $CFG, $PAGE;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1, 'format' => 'topics', 'numsections' => 1]);
+        $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'section' => 1, 'completion' => 1]);
+
+        $this->enrol_and_login($course, 'student');
+        $this->set_course_page($course);
+        $PAGE->set_pagetype('course-view-section-' . $course->format . '-restricted');
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    public function test_execute_does_not_inject_on_arbitrary_course_view_subpagetype(): void {
+        global $CFG, $PAGE;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1, 'format' => 'topics']);
+        $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'completion' => 1]);
+
+        $this->enrol_and_login($course, 'student');
+        $this->set_course_page($course);
+        $PAGE->set_pagetype('course-view-' . $course->format . '-extra');
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    public function test_execute_injects_on_single_section_page_when_target_in_section(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course([
+            'enablecompletion' => 1,
+            'format' => 'topics',
+            'numsections' => 2,
+        ]);
+        $page1 = $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'section' => 1,
+            'completion' => 1,
+        ]);
+        $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'section' => 2,
+            'completion' => 1,
+        ]);
+
+        $this->enrol_and_login($course, 'student');
+        $section1 = get_fast_modinfo($course)->get_section_info(1);
+        $this->set_single_section_page($course, (int)$section1->id);
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringContainsString('local_smart_resume/main', $html);
+        $this->assertStringContainsString((string)$page1->cmid, $html);
+    }
+
+    public function test_execute_does_not_inject_on_single_section_page_when_target_in_other_section(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $course = $this->getDataGenerator()->create_course([
+            'enablecompletion' => 1,
+            'format' => 'topics',
+            'numsections' => 2,
+        ]);
+        $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'section' => 1,
+            'completion' => 1,
+        ]);
+        $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'section' => 2,
+            'completion' => 1,
+        ]);
+
+        $this->enrol_and_login($course, 'student');
+        $section2 = get_fast_modinfo($course)->get_section_info(2);
+        $this->set_single_section_page($course, (int)$section2->id);
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringNotContainsString('local_smart_resume/main', $html);
+    }
+
+    public function test_execute_injects_on_single_section_page_when_target_in_delegated_subsection(): void {
+        global $CFG;
+
+        if (!\core_component::get_plugin_directory('mod', 'subsection')) {
+            $this->markTestSkipped('mod_subsection is not available in this Moodle version.');
+        }
+
+        $this->resetAfterTest();
+        $CFG->enablecompletion = 1;
+        set_config('enable', 1, 'local_smart_resume');
+
+        $modmanager = \core_plugin_manager::resolve_plugininfo_class('mod');
+        $modmanager::enable_plugin('subsection', 1);
+
+        $course = $this->getDataGenerator()->create_course([
+            'enablecompletion' => 1,
+            'format' => 'topics',
+            'numsections' => 1,
+        ]);
+        $subsection = $this->getDataGenerator()->create_module('subsection', [
+            'course' => $course->id,
+            'section' => 1,
+        ]);
+
+        $modinfo = get_fast_modinfo($course);
+        $delegatedsection = $modinfo->get_cm($subsection->cmid)->get_delegated_section_info();
+        $this->assertNotNull($delegatedsection);
+
+        $page1 = $this->getDataGenerator()->create_module('page', [
+            'course' => $course->id,
+            'section' => $delegatedsection->section,
+            'completion' => 1,
+        ]);
+
+        $this->enrol_and_login($course, 'student');
+        $section1 = get_fast_modinfo($course)->get_section_info(1);
+        $this->set_single_section_page($course, (int)$section1->id);
+
+        $html = $this->execute_hook_and_get_html();
+        $this->assertStringContainsString('local_smart_resume/main', $html);
+        $this->assertStringContainsString((string)$page1->cmid, $html);
+    }
+
     /**
      * Point $PAGE at the course view page of the given course.
      *
@@ -276,6 +501,21 @@ final class before_footer_test extends \advanced_testcase {
         $PAGE->set_course($course);
         $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
         $PAGE->set_pagetype('course-view-' . $course->format);
+        $PAGE->set_context(\context_course::instance($course->id));
+    }
+
+    /**
+     * Point $PAGE at the single-section page of the given course section.
+     *
+     * @param \stdClass $course
+     * @param int $sectionid
+     */
+    private function set_single_section_page(\stdClass $course, int $sectionid): void {
+        global $PAGE;
+
+        $PAGE->set_course($course);
+        $PAGE->set_url(new \moodle_url('/course/section.php', ['id' => $sectionid]));
+        $PAGE->set_pagetype('course-view-section-' . $course->format);
         $PAGE->set_context(\context_course::instance($course->id));
     }
 

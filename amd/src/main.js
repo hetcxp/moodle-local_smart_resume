@@ -52,7 +52,8 @@ export const init = (strings, targetCmid) => {
         `[data-for="cmitem"][data-id="${cmid}"]`,
         `#module-${cmid}`,
         `.activity[data-id="${cmid}"]`,
-        `[data-cmid="${cmid}"]`,
+        `.activity[data-cmid="${cmid}"]`,
+        `li[data-cmid="${cmid}"]`,
         `.activity[id*="section-"][id$="-item-${cmid}"]`
     ];
 
