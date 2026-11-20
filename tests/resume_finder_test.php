@@ -35,8 +35,8 @@ use local_smart_resume\service\resume_finder_interface;
  * @category   test
  * @copyright  2025 Héctor Eduardo Terán Canelones
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_smart_resume\service\resume_finder
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_smart_resume\service\resume_finder::class)]
 final class resume_finder_test extends \advanced_testcase {
     #[\Override]
     protected function tearDown(): void {

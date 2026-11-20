@@ -32,8 +32,8 @@ namespace local_smart_resume;
  * @category   test
  * @copyright  2025 Héctor Eduardo Terán Canelones
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_smart_resume\hook\before_footer
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\local_smart_resume\hook\before_footer::class)]
 final class before_footer_test extends \advanced_testcase {
     #[\Override]
     protected function tearDown(): void {

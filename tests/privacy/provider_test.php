@@ -35,8 +35,8 @@ use core_privacy\manager;
  * @category   test
  * @copyright  2025 Héctor Eduardo Terán Canelones
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \local_smart_resume\privacy\provider
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(provider::class)]
 final class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * Verify that the privacy provider implements null_provider and is discoverable.

@@ -24,10 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Smart Resume';
-$string['nextactivity'] = 'Siguiente actividad';
 $string['enable'] = 'Habilitar Smart Resume';
 $string['enable_desc'] = 'Si se activa, el plugin resaltará automáticamente y se desplazará a la primera actividad incompleta en los cursos.';
+$string['nextactivity'] = 'Siguiente actividad';
+$string['pluginname'] = 'Smart Resume';
 $string['preview_for_admins'] = 'Permitir previsualización a docentes y administradores';
 $string['preview_for_admins_desc'] = 'Permite a usuarios con permisos de edición y administración previsualizar el indicador de Smart Resume en cursos para propósitos de verificación.';
 $string['privacy:metadata'] = 'El plugin Smart Resume no almacena datos personales.';
