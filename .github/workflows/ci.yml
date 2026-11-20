@@ -98,7 +98,18 @@ jobs:
         run: moodle-plugin-ci mustache
 
       - name: Grunt & JS/CSS Lint (ESLint / Stylelint)
+        id: grunt
         run: moodle-plugin-ci grunt --max-lint-warnings 0
+
+      - name: Upload Rebuilt AMD Bundle on Grunt Failure
+        if: failure() && steps.grunt.outcome == 'failure' && matrix.moodle-branch == 'MOODLE_405_STABLE' && matrix.database == 'pgsql'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebuilt-amd-build
+          path: |
+            moodle/local/smart_resume/amd/build/
+            moodle/public/local/smart_resume/amd/build/
+          if-no-files-found: ignore
 
       - name: PHPUnit Tests
         run: moodle-plugin-ci phpunit --fail-on-warning
