@@ -101,6 +101,11 @@ jobs:
         id: grunt
         run: moodle-plugin-ci grunt --max-lint-warnings 0
 
+      - name: Rebuild AMD Bundle in CI on Grunt Failure
+        if: failure() && steps.grunt.outcome == 'failure' && matrix.moodle-branch == 'MOODLE_405_STABLE' && matrix.database == 'pgsql'
+        working-directory: moodle/local/smart_resume
+        run: npx grunt amd
+
       - name: Upload Rebuilt AMD Bundle on Grunt Failure
         if: failure() && steps.grunt.outcome == 'failure' && matrix.moodle-branch == 'MOODLE_405_STABLE' && matrix.database == 'pgsql'
         uses: actions/upload-artifact@v4
